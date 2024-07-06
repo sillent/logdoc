@@ -13,7 +13,7 @@ pub struct Arg {
     pub recurse: bool,
 
     #[arg(short, long)]
-    pub file: Option<String>,
+    pub file: Option<Vec<String>>,
 }
 
 #[cfg(test)]
