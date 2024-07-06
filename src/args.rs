@@ -4,13 +4,16 @@ use clap::Parser;
 #[command(version, about, long_about=None)]
 pub struct Arg {
     #[arg(short, long)]
-    project_name: String,
+    pub project_name: String,
 
     #[arg(short, long)]
-    directories: Option<Vec<String>>,
+    pub directories: Option<Vec<String>>,
 
     #[arg(short)]
-    recurse: bool,
+    pub recurse: bool,
+
+    #[arg(short, long)]
+    pub file: Option<String>,
 }
 
 #[cfg(test)]
