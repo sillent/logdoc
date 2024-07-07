@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
-pub struct FileList;
+pub(crate) struct FileList;
 
 impl FileList {
-    pub fn walk<T>(paths: Vec<T>) -> FileList
+    pub(crate) fn walk<T>(paths: Vec<T>) -> FileList
     where
         T: AsRef<str>,
     {
@@ -17,11 +17,9 @@ pub(crate) fn proceed(
     recurse: bool,
 ) -> Vec<String> {
     let mut res = vec![];
-    // walkdir(, )
     if let Some(dirs) = dirs {
         for dir in dirs {
-            // TODO: unwrap behavior
-            walkdir(&PathBuf::from(dir), &mut res, recurse).unwrap();
+            walkdir(&PathBuf::from(dir), &mut res, recurse);
         }
     }
     if let Some(files) = files {
@@ -30,33 +28,19 @@ pub(crate) fn proceed(
     return res;
 }
 
-fn walkdir(
-    path: &std::path::PathBuf,
-    result: &mut Vec<String>,
-    recurse: bool,
-) -> Result<(), std::io::Error> {
-    for entry in std::fs::read_dir(path)? {
-        let entry = entry?;
-        let path = entry.path();
-        if path.is_dir() {
-            if recurse {
-                walkdir(&path, result, recurse)?
+fn walkdir(path: &std::path::PathBuf, result: &mut Vec<String>, recurse: bool) {
+    if let Ok(entry) = std::fs::read_dir(path) {
+        for e in entry {
+            if let Ok(e) = e {
+                let path = e.path();
+                if path.is_dir() {
+                    walkdir(&path, result, recurse);
+                } else if path.is_file() {
+                    result.push(path.into_os_string().into_string().unwrap());
+                }
             }
-        } else if path.is_file() {
-            let s = path.into_os_string().into_string().unwrap();
-            result.push(s);
         }
     }
-    Ok(())
-}
-fn walk_dir(path: &String, recurse: bool) -> Vec<String> {
-    let mut result = vec![];
-    // if let Ok(dir) = std::fs::read_dir(path) {
-    //     // if std::
-    //     return result;
-    // }
-    std::fs::read_dir(path).map(|de| de.map(|res| res.map(|entry| entry.file_type())));
-    result
 }
 
 #[cfg(test)]
