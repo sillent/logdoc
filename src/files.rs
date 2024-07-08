@@ -1,3 +1,4 @@
+use crate::args;
 use std::path::PathBuf;
 
 pub(crate) struct FileList;
@@ -12,17 +13,18 @@ impl FileList {
 }
 
 pub(crate) fn proceed(
-    files: &Option<Vec<String>>,
-    dirs: &Option<Vec<String>>,
-    recurse: bool,
+    // files: &Option<Vec<String>>,
+    // dirs: &Option<Vec<String>>,
+    // recurse: bool,
+    arg: &args::Arg,
 ) -> Vec<String> {
     let mut res = vec![];
-    if let Some(dirs) = dirs {
+    if let Some(ref dirs) = arg.directories {
         for dir in dirs {
-            walkdir(&PathBuf::from(dir), &mut res, recurse);
+            walkdir(&PathBuf::from(dir), &mut res, arg.recurse);
         }
     }
-    if let Some(files) = files {
+    if let Some(ref files) = arg.files {
         files.iter().map(|x| res.push(x.clone())).count();
     }
     return res;

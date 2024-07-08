@@ -63,7 +63,7 @@ impl Language {
     	(
     		(comment) @severity
     	)
-        (#match? @severity "^// (Info|Debug|Critical|Trace|Fatal):")
+        (#match? @severity "^// (INFO|DEBUG|TRACE|WARN|FATAL):")
     )
    	.
     (comment) @subject
