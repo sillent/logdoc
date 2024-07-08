@@ -95,3 +95,33 @@ pub const QUERY5: &'static str = r#"
     )
 )
 "#;
+
+pub const QUERY_LOG1: &'static str = r#"
+(
+	(
+    	(
+    		(comment) @comment1
+    	)
+        (#match? @comment1 "^// (Info|Debug|Critical|Trace|Fatal):")
+    )
+    .
+    (comment)*? @coment2
+
+)
+"#;
+
+pub const QUERY_LOG2: &'static str = r#"
+(
+	(
+    	(
+    		(comment) @severity
+    	)
+        (#match? @severity "^// (Info|Debug|Critical|Trace|Fatal):")
+    )
+   	.
+    (comment) @subject
+    .
+    (comment)*? @description
+
+)
+"#;

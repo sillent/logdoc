@@ -9,11 +9,15 @@ impl Application {
     pub fn run() {
         let arg = args::Arg::parse();
         let mut parse = tree_sitter::Parser::new();
-        parse
-            .set_language(&tree_sitter_go::language())
-            .expect("failed to load GO tree sitter language");
+        parse.set_language(&arg.language.sitter_language()).expect(
+            format!(
+                "failed to load {} tree-sitter language",
+                arg.language.to_string().as_str()
+            )
+            .as_str(),
+        );
         println!(
-            "pit = {:?}",
+            "processed files = {:?}",
             files::proceed(&arg.files, &arg.directories, true)
         );
         // unimplemented!("test");
@@ -23,7 +27,8 @@ impl Application {
             let tree = parse.parse(res.as_bytes(), None).unwrap();
 
             #[allow(unused_mut)]
-            let mut query = tree_sitter::Query::new(&tree_sitter_go::language(), &QUERY4).unwrap();
+            let mut query =
+                tree_sitter::Query::new(&tree_sitter_go::language(), &QUERY_LOG2).unwrap();
             let mut qc = tree_sitter::QueryCursor::new();
             let mut qc_res = qc.matches(&query, tree.root_node(), res.as_bytes());
             for q in qc_res {
