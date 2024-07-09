@@ -1,5 +1,11 @@
-use crate::args;
-use std::path::PathBuf;
+use crate::{
+    args,
+    meta::{MetaPos, Pos},
+};
+use std::{
+    io::{Seek, Write},
+    path::PathBuf,
+};
 
 pub(crate) struct FileList;
 
@@ -40,9 +46,50 @@ fn walkdir(path: &std::path::PathBuf, result: &mut Vec<String>, recurse: bool) {
     }
 }
 
+pub fn walk_file(data: &[u8], pos: Pos) -> Vec<u8> {
+    let mut lines: Vec<Vec<u8>> = vec![];
+    let mut local_line: Vec<u8> = vec![];
+    for byte in data {
+        local_line.push(byte.clone());
+        if byte.eq(&10) {
+            lines.push(local_line.clone());
+            // local_line.flush().unwrap();
+            local_line.clear();
+            continue;
+        }
+    }
+    let mut ret = vec![];
+    for (line_num, line) in lines.iter().enumerate() {
+        if line_num.ge(&(pos.start.0 as usize)) && line_num.le(&(pos.end.0 as usize)) {
+            for (char_num, char) in line.iter().enumerate() {
+                if char_num.ge(&(pos.start.1 as usize)) && char_num.le(&(pos.end.1 as usize)) {
+                    ret.push(*char);
+                }
+            }
+        }
+    }
+    ret
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::meta::Pos;
+
+    use super::walk_file;
 
     #[test]
-    fn proceed_return_vec_of_all_files() {}
+    fn test_walk_file() {
+        let data = r#"Hello,
+December is a last month in the year
+ When January comes
+All gifts are gone
+"#;
+        let pos = Pos {
+            typo: crate::meta::Typo::Level,
+            start: (2, 1),
+            end: (2, 4),
+        };
+        let result = walk_file(data.as_bytes(), pos);
+        assert_eq!(vec![87u8, 104, 101, 110], result);
+    }
 }
