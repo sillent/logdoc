@@ -4,7 +4,7 @@ package main
 func main() {
 	// INFO: this comment correct
 	// test vas
-	//
+	// piter
 	// jj
 	log.WithFields(logrus.Fields{"hello": "test"}).Print("hello, druzya %v", "text")
 	log.Info("hello, piter")

@@ -12,12 +12,7 @@ impl FileList {
     }
 }
 
-pub(crate) fn proceed(
-    // files: &Option<Vec<String>>,
-    // dirs: &Option<Vec<String>>,
-    // recurse: bool,
-    arg: &args::Arg,
-) -> Vec<String> {
+pub(crate) fn proceed(arg: &args::Arg) -> Vec<String> {
     let mut res = vec![];
     if let Some(ref dirs) = arg.directories {
         for dir in dirs {
