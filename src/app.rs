@@ -28,16 +28,15 @@ impl Application {
             println!("path = {file}");
             let res = std::fs::read_to_string(file).unwrap();
             let tree = parse.parse(&res.as_bytes(), None).unwrap();
-            let mut qc = tree_sitter::QueryCursor::new();
-            let mut qc_res = qc.matches(&query, tree.root_node(), res.as_bytes());
-            for q in qc_res {
-                // Pos::from(q.captures);
+            let mut query_cursor = tree_sitter::QueryCursor::new();
+            let mut query_matches = query_cursor.matches(&query, tree.root_node(), res.as_bytes());
+            for query_match in query_matches {
                 let mut poses = vec![];
-                for q1 in q.captures {
-                    let p = Pos::from(*q1);
-                    poses.push(p);
-                    // form_meta()
-                    // println!("{:?}", p);
+                for query_capture in query_match.captures {
+                    let p = Pos::from(*query_capture);
+                    poses.push(p.clone());
+                    let p1 = files::walk_file(res.as_bytes(), p.clone());
+                    println!("p1 = {p1:?}");
                 }
                 let meta = form_meta(poses);
                 println!("meta = {meta:?}");

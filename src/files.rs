@@ -46,14 +46,16 @@ fn walkdir(path: &std::path::PathBuf, result: &mut Vec<String>, recurse: bool) {
     }
 }
 
-pub fn walk_file(data: &[u8], pos: Pos) -> Vec<u8> {
+pub fn walk_file<T>(data: T, pos: Pos) -> Vec<u8>
+where
+    T: AsRef<[u8]>,
+{
     let mut lines: Vec<Vec<u8>> = vec![];
     let mut local_line: Vec<u8> = vec![];
-    for byte in data {
+    for byte in data.as_ref() {
         local_line.push(byte.clone());
         if byte.eq(&10) {
             lines.push(local_line.clone());
-            // local_line.flush().unwrap();
             local_line.clear();
             continue;
         }

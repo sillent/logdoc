@@ -16,14 +16,14 @@ pub struct MetaPos {
     pub comment3: Vec<Pos>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Typo {
     Level,
     Subject,
     Description,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Pos {
     pub typo: Typo,
     pub start: (u32, u32),
