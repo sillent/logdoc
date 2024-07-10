@@ -1,4 +1,8 @@
+use std::path::PathBuf;
+
 use clap::Parser;
+
+use crate::files;
 
 #[derive(Debug, Parser)]
 #[command(name = "LogDoc")]
@@ -81,6 +85,21 @@ impl Language {
             Language::Golang => tree_sitter_go::language(),
             _ => unimplemented!("TODO: implement other languages tree-sitter"),
         }
+    }
+}
+
+impl Arg {
+    pub fn files_list(&self) -> Vec<String> {
+        let mut result = vec![];
+        if let Some(ref dirs) = self.directories {
+            for dir in dirs {
+                files::walk_dir(&PathBuf::from(dir), &mut result, self.recurse);
+            }
+        }
+        if let Some(ref files) = self.files {
+            files.iter().map(|x| result.push(x.clone())).count();
+        }
+        result
     }
 }
 

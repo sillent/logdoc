@@ -50,8 +50,8 @@ impl From<u32> for Typo {
     }
 }
 
-impl<'e> From<QueryCapture<'e>> for Pos {
-    fn from(value: QueryCapture) -> Self {
+impl<'e> From<&QueryCapture<'e>> for Pos {
+    fn from(value: &QueryCapture) -> Self {
         Pos {
             start: (
                 value.node.start_position().row as u32,

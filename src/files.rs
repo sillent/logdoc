@@ -2,44 +2,36 @@ use crate::{
     args,
     meta::{MetaPos, Pos},
 };
-use std::{
-    io::{Seek, Write},
-    path::PathBuf,
-};
+use std::io::{Seek, Write};
 
-pub(crate) struct FileList;
+pub(crate) struct FileList {
+    list: Vec<String>,
+}
 
 impl FileList {
     pub(crate) fn walk<T>(paths: Vec<T>) -> FileList
     where
         T: AsRef<str>,
     {
-        Self
+        Self { list: vec![] }
     }
 }
 
-pub(crate) fn proceed(arg: &args::Arg) -> Vec<String> {
-    let mut res = vec![];
-    if let Some(ref dirs) = arg.directories {
-        for dir in dirs {
-            walkdir(&PathBuf::from(dir), &mut res, arg.recurse);
-        }
-    }
-    if let Some(ref files) = arg.files {
-        files.iter().map(|x| res.push(x.clone())).count();
-    }
-    return res;
-}
-
-fn walkdir(path: &std::path::PathBuf, result: &mut Vec<String>, recurse: bool) {
+pub fn walk_dir(path: &std::path::Path, result: &mut Vec<String>, recurse: bool) {
     if let Ok(entry) = std::fs::read_dir(path) {
         for e in entry {
             if let Ok(e) = e {
                 let path = e.path();
                 if path.is_dir() {
-                    walkdir(&path, result, recurse);
+                    walk_dir(&path, result, recurse);
                 } else if path.is_file() {
-                    result.push(path.into_os_string().into_string().unwrap());
+                    // path.into_os_string()
+                    //     .into_string()
+                    //     .ok()
+                    //     .and_then(result.push);
+                    if let Ok(path) = path.into_os_string().into_string() {
+                        result.push(path);
+                    }
                 }
             }
         }
