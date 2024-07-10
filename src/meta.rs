@@ -16,22 +16,24 @@ pub struct MetaPos {
     pub comment3: Vec<Pos>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum Typo {
+    #[default]
     Level,
     Subject,
     Description,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Pos {
     pub typo: Typo,
     pub start: (u32, u32),
     pub end: (u32, u32),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum Level {
+    #[default]
     Info,
     Debug,
     Trace,
@@ -45,7 +47,8 @@ impl From<u32> for Typo {
             0 => Typo::Level,
             1 => Typo::Subject,
             2 => Typo::Description,
-            _ => unimplemented!("shouldn't happened"),
+            // _ => unimplemented!("shouldn't happened"),
+            _ => Typo::default(),
         }
     }
 }
