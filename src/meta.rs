@@ -49,8 +49,19 @@ impl From<u32> for Typo {
             0 => Typo::Level,
             1 => Typo::Subject,
             2 => Typo::Description,
-            // _ => unimplemented!("shouldn't happened"),
             _ => Typo::default(),
+        }
+    }
+}
+
+impl TryFrom<u8> for Typo {
+    type Error = &'static str;
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(Typo::Level),
+            1 => Ok(Typo::Subject),
+            2 => Ok(Typo::Description),
+            _ => Err("unsupported value"),
         }
     }
 }
