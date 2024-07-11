@@ -1,5 +1,7 @@
 use tree_sitter::QueryCapture;
 
+use crate::files;
+
 #[derive(Debug)]
 pub struct Meta {
     pub file: String,
@@ -66,6 +68,21 @@ impl<'e> From<&QueryCapture<'e>> for Pos {
             ),
             typo: Typo::from(value.index),
         }
+    }
+}
+
+impl files::WalkInPosition for Pos {
+    fn line_start(&self) -> usize {
+        self.start.0 as usize
+    }
+    fn line_end(&self) -> usize {
+        self.end.0 as usize
+    }
+    fn pos_start(&self) -> usize {
+        self.start.1 as usize
+    }
+    fn pos_end(&self) -> usize {
+        self.end.1 as usize
     }
 }
 
