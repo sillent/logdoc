@@ -57,36 +57,36 @@ impl ToString for Language {
     }
 }
 
-impl Language {
-    pub fn query(&self) -> &str {
-        match self {
-            Language::Golang => {
-                r#"
-(
-	(
-    	(
-    		(comment) @severity
-    	)
-        (#match? @severity "^// (INFO|DEBUG|TRACE|WARN|FATAL):")
-    )
-   	.
-    (comment) @subject
-    .
-    (comment)*? @description
+// impl Language {
+//     pub fn query(&self) -> &str {
+//         match self {
+//             Language::Golang => {
+//                 r#"
+// (
+// 	(
+//     	(
+//     		(comment) @severity
+//     	)
+//         (#match? @severity "^// (INFO|DEBUG|TRACE|WARN|FATAL):")
+//     )
+//    	.
+//     (comment) @subject
+//     .
+//     (comment)*? @description
 
-)
-"#
-            }
-            _ => r#"()"#,
-        }
-    }
-    pub fn sitter_language(&self) -> tree_sitter::Language {
-        match self {
-            Language::Golang => tree_sitter_go::language(),
-            _ => unimplemented!("TODO: implement other languages tree-sitter"),
-        }
-    }
-}
+// )
+// "#
+//             }
+//             _ => r#"()"#,
+//         }
+//     }
+//     pub fn sitter_language(&self) -> tree_sitter::Language {
+//         match self {
+//             Language::Golang => tree_sitter_go::language(),
+//             _ => unimplemented!("TODO: implement other languages tree-sitter"),
+//         }
+//     }
+// }
 
 impl Arg {
     pub fn files_list(&self) -> Vec<String> {

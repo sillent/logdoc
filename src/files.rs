@@ -1,21 +1,4 @@
-use crate::meta::{MetaPos, Pos};
-use std::{
-    io::{Seek, Write},
-    path::Path,
-};
-
-pub(crate) struct FileList {
-    list: Vec<String>,
-}
-
-impl FileList {
-    pub(crate) fn walk<T>(paths: Vec<T>) -> FileList
-    where
-        T: AsRef<str>,
-    {
-        Self { list: vec![] }
-    }
-}
+use crate::meta::Pos;
 
 pub trait WalkInPosition {
     fn line_start(&self) -> usize;
@@ -73,7 +56,8 @@ where
     }
     ret
 }
-pub fn search_in_file2<T, W>(data: T, pos: W) -> Vec<u8>
+
+pub fn search_in_file_dyn<T, W>(data: T, pos: &W) -> Vec<u8>
 where
     T: AsRef<[u8]>,
     W: WalkInPosition,
@@ -103,7 +87,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::meta::Pos;
+    use crate::{files::search_in_file_dyn, meta::Pos};
 
     use super::search_in_file;
 
@@ -120,6 +104,22 @@ All gifts are gone
             end: (2, 4),
         };
         let result = search_in_file(data.as_bytes(), &pos);
+        assert_eq!(vec![87u8, 104, 101, 110], result);
+    }
+
+    #[test]
+    fn test_walk_file_dyn() {
+        let data = r#"Hello,
+December is a last month in the year
+ When January comes
+All gifts are gone
+"#;
+        let pos = Pos {
+            typo: crate::meta::Typo::Level,
+            start: (2, 1),
+            end: (2, 4),
+        };
+        let result = search_in_file_dyn(data.as_bytes(), &pos);
         assert_eq!(vec![87u8, 104, 101, 110], result);
     }
 }

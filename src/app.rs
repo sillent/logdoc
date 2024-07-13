@@ -11,16 +11,14 @@ impl Application {
     pub fn run() -> Result<(), Box<dyn std::error::Error>> {
         let arg = args::Arg::parse();
         let mut parse = tree_sitter::Parser::new();
-        parse
-            .set_language(&arg.language.sitter_language())
-            .or(Err(format!(
-                "Failed to load {} tree-sitter language",
-                arg.language.to_string().as_str()
-            )))?;
+        let lang = crate::language::Language::from(&arg.language);
+        parse.set_language(&lang.sitter_language()).or(Err(format!(
+            "Failed to load {} tree-sitter language",
+            &lang
+        )))?;
         println!("processed files = {:?}", arg.files_list());
 
-        let query =
-            tree_sitter::Query::new(&arg.language.sitter_language(), &arg.language.query())?;
+        let query = tree_sitter::Query::new(&lang.sitter_language(), &lang.query())?;
         // .unwrap();
         // let files = files::proceed(&arg);
         let files = arg.files_list();
@@ -37,7 +35,8 @@ impl Application {
                 for query_capture in query_match.captures {
                     let position = Pos::from(query_capture);
                     positions.push(position.clone());
-                    let p1 = files::search_in_file(res.as_bytes(), &position);
+                    // let p1 = files::search_in_file(res.as_bytes(), &position);
+                    let p1 = files::search_in_file_dyn(&res.as_bytes(), &position);
                     println!("p1 = {p1:?}");
                 }
                 let meta = form_meta(positions);
