@@ -48,21 +48,22 @@ impl Language {
     pub fn query(&self) -> &str {
         match self {
             Language::Golang => {
-                r#"
-(
-	(
-    	(
-    		(comment) @severity
-    	)
-        (#match? @severity "^// (INFO|DEBUG|TRACE|WARN|FATAL):")
-    )
-   	.
-    (comment) @subject
-    .
-    (comment)*? @description
+                query_go()
+                //                 r#"
+                // (
+                // 	(
+                //     	(
+                //     		(comment) @severity
+                //     	)
+                //         (#match? @severity "^// (INFO|DEBUG|TRACE|WARN|FATAL):")
+                //     )
+                //    	.
+                //     (comment) @subject
+                //     .
+                //     (comment)*? @description
 
-)
-"#
+                // )
+                // "#
             }
             _ => r#"()"#,
         }
@@ -80,4 +81,19 @@ impl Language {
             Rust => tree_sitter_rust::language(),
         }
     }
+}
+
+fn query_go() -> &'static str {
+    r#"(
+	(
+    	(
+    		(comment) @severity
+    	)
+        (#match? @severity "^// (INFO|DEBUG|TRACE|WARN|FATAL):")
+    )
+   	.
+    (comment) @subject
+    .
+    (comment)*? @description
+    )"#
 }

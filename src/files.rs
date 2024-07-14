@@ -1,10 +1,46 @@
+use std::{collections::hash_map::Entry, path::Path};
+
 use crate::meta::Pos;
+use walkdir;
 
 pub trait WalkInPosition {
     fn line_start(&self) -> usize;
     fn line_end(&self) -> usize;
     fn pos_start(&self) -> usize;
     fn pos_end(&self) -> usize;
+}
+
+pub fn list_files_only<T>(
+    paths: Vec<T>,
+    recurse: bool,
+) -> Result<Vec<String>, Box<dyn std::error::Error>>
+where
+    T: AsRef<Path>,
+{
+    // for path in paths {
+    //     let wd = walkdir::WalkDir::new(path);
+    //     for entry in wd.into_iter().filter_entry(|e| !is_hidden(e))
+    //     // .filter_entry(|e| is_file(e))?
+    //     {
+    //         entry?;
+    //         return Ok(vec![String::from("")]);
+    //     }
+    // }
+
+    // if let Ok(entry) = std::fs::read_dir(pa)
+    unimplemented!();
+}
+
+fn is_hidden(entry: &walkdir::DirEntry) -> bool {
+    entry
+        .file_name()
+        .to_str()
+        .map(|s| s.starts_with("."))
+        .unwrap_or(false)
+}
+
+fn is_file(entry: &walkdir::DirEntry) -> bool {
+    entry.file_type().is_file()
 }
 
 pub fn walk_dir(path: &std::path::Path, result: &mut Vec<String>, recurse: bool) {
@@ -17,10 +53,6 @@ pub fn walk_dir(path: &std::path::Path, result: &mut Vec<String>, recurse: bool)
                         walk_dir(&path, result, recurse);
                     }
                 } else if path.is_file() {
-                    // path.into_os_string()
-                    //     .into_string()
-                    //     .ok()
-                    //     .and_then(result.push);
                     if let Ok(path) = path.into_os_string().into_string() {
                         result.push(path);
                     }

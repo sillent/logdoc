@@ -26,7 +26,7 @@ pub struct Arg {
 
     /// Specify language that should be proceeded
     #[arg(short, long)]
-    #[clap(value_parser, default_value_t=Language::Rust)]
+    #[clap(value_parser)]
     pub language: Language,
 }
 
@@ -56,37 +56,6 @@ impl ToString for Language {
         }
     }
 }
-
-// impl Language {
-//     pub fn query(&self) -> &str {
-//         match self {
-//             Language::Golang => {
-//                 r#"
-// (
-// 	(
-//     	(
-//     		(comment) @severity
-//     	)
-//         (#match? @severity "^// (INFO|DEBUG|TRACE|WARN|FATAL):")
-//     )
-//    	.
-//     (comment) @subject
-//     .
-//     (comment)*? @description
-
-// )
-// "#
-//             }
-//             _ => r#"()"#,
-//         }
-//     }
-//     pub fn sitter_language(&self) -> tree_sitter::Language {
-//         match self {
-//             Language::Golang => tree_sitter_go::language(),
-//             _ => unimplemented!("TODO: implement other languages tree-sitter"),
-//         }
-//     }
-// }
 
 impl Arg {
     pub fn files_list(&self) -> Vec<String> {
