@@ -1,7 +1,6 @@
-use std::{collections::hash_map::Entry, path::Path};
+use std::path::Path;
 
-use crate::meta::Pos;
-use walkdir;
+use crate::{args, meta::Pos};
 
 pub trait WalkInPosition {
     fn line_start(&self) -> usize;
@@ -10,37 +9,71 @@ pub trait WalkInPosition {
     fn pos_end(&self) -> usize;
 }
 
-pub fn list_files_only<T>(
-    paths: Vec<T>,
+pub fn form_list_files(arg: &args::Arg) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let mut total = vec![];
+    if let Some(files) = &arg.files {
+        for file in files {
+            if std::fs::metadata(&file)?.is_file() {
+                total.push(file.clone());
+            }
+        }
+    }
+    let recurse = arg.recurse;
+    let mut files = list_files_in_dir(&arg.directories(), recurse)?;
+    total.append(&mut files);
+
+    Ok(total)
+}
+fn list_files_in_dir<T>(
+    dirs: &Vec<T>,
     recurse: bool,
 ) -> Result<Vec<String>, Box<dyn std::error::Error>>
 where
     T: AsRef<Path>,
 {
-    // for path in paths {
-    //     let wd = walkdir::WalkDir::new(path);
-    //     for entry in wd.into_iter().filter_entry(|e| !is_hidden(e))
-    //     // .filter_entry(|e| is_file(e))?
-    //     {
-    //         entry?;
-    //         return Ok(vec![String::from("")]);
-    //     }
-    // }
-
-    // if let Ok(entry) = std::fs::read_dir(pa)
-    unimplemented!();
+    let mut files_total = vec![];
+    for dir in dirs {
+        let mut files = walk_path(dir.as_ref(), recurse)?;
+        files_total.append(&mut files);
+    }
+    Ok(files_total)
 }
 
-fn is_hidden(entry: &walkdir::DirEntry) -> bool {
+fn walk_path(
+    path: &std::path::Path,
+    recurse: bool,
+) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let mut files = vec![];
+    println!("read dir path = {path:?}");
+    let entries = std::fs::read_dir(path)?;
+    for entry in entries {
+        let entry = entry?;
+        if is_hidden(&entry) {
+            continue;
+        }
+        if entry.file_type()?.is_symlink() {
+            continue;
+        }
+        if entry.file_type()?.is_dir() {
+            if recurse {
+                let mut files_in_entry = walk_path(path.as_ref(), recurse)?;
+                files.append(&mut files_in_entry);
+            }
+            continue;
+        }
+        if let Ok(path) = entry.path().into_os_string().into_string() {
+            files.push(path);
+        }
+    }
+    Ok(files)
+}
+
+fn is_hidden(entry: &std::fs::DirEntry) -> bool {
     entry
         .file_name()
         .to_str()
         .map(|s| s.starts_with("."))
         .unwrap_or(false)
-}
-
-fn is_file(entry: &walkdir::DirEntry) -> bool {
-    entry.file_type().is_file()
 }
 
 pub fn walk_dir(path: &std::path::Path, result: &mut Vec<String>, recurse: bool) {

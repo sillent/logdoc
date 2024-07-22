@@ -4,7 +4,7 @@ use clap::Parser;
 
 use crate::files;
 
-#[derive(Debug, Parser)]
+#[derive(Debug, Parser, Clone)]
 #[command(name = "LogDoc")]
 #[command(version, about="Create .MD files with information about logs", long_about=None)]
 pub struct Arg {
@@ -44,15 +44,16 @@ pub enum Language {
 
 impl ToString for Language {
     fn to_string(&self) -> String {
+        use Language::*;
         match self {
-            Language::Golang => "golang".to_owned(),
-            Language::C => "c".to_owned(),
-            Language::Cpp => "cpp".to_owned(),
-            Language::Python => "python".to_owned(),
-            Language::Java => "java".to_owned(),
-            Language::JavaScript => "javascript".to_owned(),
-            Language::Ruby => "ruby".to_owned(),
-            Language::Rust => "rust".to_owned(),
+            Golang => "golang".to_owned(),
+            C => "c".to_owned(),
+            Cpp => "cpp".to_owned(),
+            Python => "python".to_owned(),
+            Java => "java".to_owned(),
+            JavaScript => "javascript".to_owned(),
+            Ruby => "ruby".to_owned(),
+            Rust => "rust".to_owned(),
         }
     }
 }
@@ -69,6 +70,22 @@ impl Arg {
             files.iter().map(|x| result.push(x.clone())).count();
         }
         result
+    }
+    pub fn directories(&self) -> Vec<String> {
+        let dirs = if let Some(dirs) = self.directories.clone() {
+            dirs
+        } else {
+            vec![]
+        };
+        dirs
+    }
+    pub fn directories_ref(&self) -> Vec<&String> {
+        // let res = vec![];
+        if let Some(dirs) = &self.directories {
+            let v = dirs.iter().map(|x| x).collect();
+            return v;
+        }
+        return vec![];
     }
 }
 

@@ -47,24 +47,7 @@ impl Display for Language {
 impl Language {
     pub fn query(&self) -> &str {
         match self {
-            Language::Golang => {
-                query_go()
-                //                 r#"
-                // (
-                // 	(
-                //     	(
-                //     		(comment) @severity
-                //     	)
-                //         (#match? @severity "^// (INFO|DEBUG|TRACE|WARN|FATAL):")
-                //     )
-                //    	.
-                //     (comment) @subject
-                //     .
-                //     (comment)*? @description
-
-                // )
-                // "#
-            }
+            Language::Golang => query_go(),
             _ => r#"()"#,
         }
     }

@@ -5,6 +5,7 @@ use crate::args;
 use crate::files;
 use crate::meta::form_meta;
 use crate::meta::Pos;
+
 pub struct Application;
 
 impl Application {
@@ -16,12 +17,18 @@ impl Application {
             "Failed to load {} tree-sitter language",
             &lang
         )))?;
-        println!("processed files = {:?}", arg.files_list());
+        // println!("processed files = {:?}", arg.files_list());
+        // let argclone = arg.clone();
+        // let k = files::list_files(&arg.directories.unwrap(), false);
+        // let k = files::list_files(&arg.directories_ref(), false);
+        let files = files::form_list_files(&arg)?;
+        println!("processed files = {:?}", files);
+        println!("processed files = {:?}", files);
 
         let query = tree_sitter::Query::new(&lang.sitter_language(), &lang.query())?;
         // .unwrap();
         // let files = files::proceed(&arg);
-        let files = arg.files_list();
+        // let files = arg.files_list();
         for file in files {
             println!("path = {file}");
             let res = std::fs::read_to_string(file)?;
