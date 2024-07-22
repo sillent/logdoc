@@ -59,18 +59,18 @@ impl ToString for Language {
 }
 
 impl Arg {
-    pub fn files_list(&self) -> Vec<String> {
-        let mut result = vec![];
-        if let Some(ref dirs) = self.directories {
-            for dir in dirs {
-                files::walk_dir(&PathBuf::from(dir), &mut result, self.recurse);
-            }
-        }
-        if let Some(ref files) = self.files {
-            files.iter().map(|x| result.push(x.clone())).count();
-        }
-        result
-    }
+    // pub fn files_list(&self) -> Vec<String> {
+    //     let mut result = vec![];
+    //     if let Some(ref dirs) = self.directories {
+    //         for dir in dirs {
+    //             files::walk_dir(&PathBuf::from(dir), &mut result, self.recurse);
+    //         }
+    //     }
+    //     if let Some(ref files) = self.files {
+    //         files.iter().map(|x| result.push(x.clone())).count();
+    //     }
+    //     result
+    // }
     pub fn directories(&self) -> Vec<String> {
         let dirs = if let Some(dirs) = self.directories.clone() {
             dirs
