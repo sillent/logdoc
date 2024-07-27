@@ -3,8 +3,16 @@ use tree_sitter::QueryMatches;
 
 use crate::args;
 use crate::files;
+use crate::meta;
 use crate::meta::form_meta;
+use crate::meta::Description;
+use crate::meta::Level;
+use crate::meta::Message;
+use crate::meta::Meta;
+use crate::meta::MetaPos;
 use crate::meta::Pos;
+use crate::meta::Subject;
+use crate::meta::Typo;
 
 pub struct Application;
 
@@ -23,7 +31,6 @@ impl Application {
         // let k = files::list_files(&arg.directories_ref(), false);
         let files = files::form_list_files(&arg)?;
         println!("processed files = {:?}", files);
-        println!("processed files = {:?}", files);
 
         let query = tree_sitter::Query::new(&lang.sitter_language(), &lang.query())?;
         // .unwrap();
@@ -31,23 +38,48 @@ impl Application {
         // let files = arg.files_list();
         for file in files {
             println!("path = {file}");
-            let res = std::fs::read_to_string(file)?;
+            let file_bytes = std::fs::read_to_string(file)?;
             let tree = parse
-                .parse(&res.as_bytes(), None)
+                .parse(&file_bytes.as_bytes(), None)
                 .ok_or("Failed to parse data")?;
             let mut query_cursor = tree_sitter::QueryCursor::new();
-            let query_matches = query_cursor.matches(&query, tree.root_node(), res.as_bytes());
+            let query_matches =
+                query_cursor.matches(&query, tree.root_node(), file_bytes.as_bytes());
             for query_match in query_matches {
                 let mut positions = vec![];
+                let mut m = Meta::default();
                 for query_capture in query_match.captures {
                     let position = Pos::from(query_capture);
-                    positions.push(position.clone());
+                    let query_bytes = files::search_in_file_dyn(&file_bytes.as_bytes(), &position);
+                    if position.typo == Typo::Level {
+                        let data = String::from_utf8_lossy(&query_bytes);
+                        let level = Level::from(&data.to_string());
+                        m.level = level;
+                        m.message = Message::from((&data.to_string(), lang.comment()));
+                    }
+                    if position.typo == Typo::Subject {
+                        let data = String::from_utf8_lossy(&query_bytes);
+                        m.subject = Subject::from((&data.to_string(), lang.comment()));
+                    }
+                    if position.typo == Typo::Description {
+                        let data = String::from_utf8_lossy(&query_bytes);
+                        let desc = Description::from((&data.to_string(), lang.comment()));
+                        let v = vec![m.description.0.clone(), desc.0];
+                        let v = Description::from((&v.join("").to_string(), lang.comment()));
+                        // let res
+                        m.description = v;
+
+                        // m.description.0.
+                    }
+                    // println!("meta = {:?}", m);
+                    positions.push(position);
                     // let p1 = files::search_in_file(res.as_bytes(), &position);
-                    let p1 = files::search_in_file_dyn(&res.as_bytes(), &position);
-                    println!("p1 = {p1:?}");
+                    // println!("p1 = {query_bytes:?}");
                 }
-                let meta = form_meta(positions);
-                println!("meta = {meta:?}");
+                // let meta = form_meta(positions);
+                // let meta = MetaPos::from(positions);
+                // println!("metapos = {meta:?}");
+                println!("meta = {m:?}");
                 println!("-----");
                 // println!("{:?}", q.captures);
                 // println!("------");

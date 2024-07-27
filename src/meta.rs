@@ -2,13 +2,23 @@ use tree_sitter::QueryCapture;
 
 use crate::files;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
+pub struct Message(String);
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
+pub struct Subject(String);
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
+pub struct Description(pub String);
+
+#[derive(Debug, Default)]
 pub struct Meta {
-    pub file: String,
+    // pub file: String,
     pub level: Level,
-    pub message: String,
-    pub subject: String,
-    pub description: String,
+    // pub message: String,
+    // pub subject: String,
+    // pub description: String,
+    pub message: Message,
+    pub subject: Subject,
+    pub description: Description,
 }
 
 #[derive(Debug)]
@@ -18,7 +28,7 @@ pub struct MetaPos {
     pub comment3: Vec<Pos>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum Typo {
     #[default]
     Level,
@@ -33,7 +43,7 @@ pub struct Pos {
     pub end: (u32, u32),
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub enum Level {
     #[default]
     Info,
@@ -41,6 +51,105 @@ pub enum Level {
     Trace,
     Warn,
     Fatal,
+}
+
+impl From<(&String, &str)> for Message {
+    fn from(value: (&String, &str)) -> Self {
+        let mut line = value.0.clone();
+        if line.to_lowercase().starts_with(value.1) {
+            let l = value.1.len();
+            crop_letters(&mut line, l);
+            delete_spaces_dotes(&mut line);
+            let variants = vec![
+                ("info:", 5),
+                ("info", 4),
+                ("debug:", 6),
+                ("debug", 5),
+                ("trace:", 6),
+                ("trace", 5),
+                ("warn:", 5),
+                ("warn", 4),
+                ("fatal:", 6),
+                ("fatal", 5),
+            ];
+            for (variant, local) in variants {
+                if line.to_lowercase().starts_with(variant) {
+                    crop_letters(&mut line, local);
+                    break;
+                }
+            }
+            delete_spaces_dotes(&mut line);
+        }
+        Message(line)
+    }
+}
+
+impl From<(&String, &str)> for Subject {
+    fn from(value: (&String, &str)) -> Self {
+        let mut line = value.0.clone();
+        if line.to_lowercase().starts_with(value.1) {
+            let l = value.1.len();
+            crop_letters(&mut line, l);
+            delete_spaces_dotes(&mut line);
+        }
+        Subject(line)
+    }
+}
+impl From<(&String, &str)> for Description {
+    fn from(value: (&String, &str)) -> Self {
+        let mut line = value.0.clone();
+        if line.to_lowercase().starts_with(value.1) {
+            let l = value.1.len();
+            crop_letters(&mut line, l);
+            delete_spaces_dotes(&mut line);
+        }
+        Description(line)
+    }
+}
+
+fn delete_spaces_dotes(line: &mut String) {
+    loop {
+        if line.starts_with(" ") {
+            crop_letters(line, 1);
+        } else if line.starts_with(":") {
+            crop_letters(line, 1);
+        } else {
+            break;
+        }
+    }
+}
+
+fn crop_letters(s: &mut String, pos: usize) {
+    match s.char_indices().nth(pos) {
+        Some((pos, _)) => {
+            s.drain(..pos);
+        }
+        None => {
+            s.clear();
+        }
+    }
+}
+
+impl From<&String> for Level {
+    fn from(value: &String) -> Self {
+        let v = value.clone();
+        if v.to_lowercase().starts_with("// info") || v.to_lowercase().starts_with("//info") {
+            return Level::Info;
+        }
+        if v.to_lowercase().starts_with("// debug") || v.to_lowercase().starts_with("//debug") {
+            return Level::Debug;
+        }
+        if v.to_lowercase().starts_with("// trace") || v.to_lowercase().starts_with("//trace") {
+            return Level::Trace;
+        }
+        if v.to_lowercase().starts_with("// fatal") || v.to_lowercase().starts_with("//fatal") {
+            return Level::Fatal;
+        }
+        if v.to_lowercase().starts_with("// warn") || v.to_lowercase().starts_with("//warn") {
+            return Level::Warn;
+        }
+        return Level::Info;
+    }
 }
 
 impl From<u32> for Typo {
@@ -109,6 +218,28 @@ pub fn form_meta(pos: Vec<Pos>) -> MetaPos {
     mpos
 }
 
+impl From<Vec<Pos>> for MetaPos {
+    fn from(values: Vec<Pos>) -> Self {
+        let mut mpos = MetaPos::default();
+        for value in values {
+            match value.typo {
+                Typo::Level => mpos.comment1 = value,
+                Typo::Subject => mpos.comment2 = value,
+                Typo::Description => mpos.comment3.push(value),
+            }
+        }
+        mpos
+    }
+}
+
+impl From<MetaPos> for Meta {
+    fn from(value: MetaPos) -> Self {
+        // let mut meta = Meta:
+        let mut meta = Meta::default();
+        let l = unimplemented!();
+    }
+}
+
 impl Default for MetaPos {
     fn default() -> Self {
         MetaPos {
@@ -123,6 +254,60 @@ impl Default for MetaPos {
                 end: (0, 0),
             },
             comment3: vec![],
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn check_level_from_string() {
+        let d1 = String::from("// DEBUG: debug message");
+        assert_eq!(Level::from(&d1), Level::Debug);
+        let d2 = String::from("// trace: trace message");
+        assert_eq!(Level::from(&d2), Level::Trace);
+        let d3 = String::from("// no level message");
+        assert_eq!(Level::from(&d3), Level::Info);
+    }
+
+    #[test]
+    fn check_message_from_string() {
+        let relevant = String::from("test Message");
+        let msgrelevant = Message(relevant.clone());
+
+        {
+            let i1 = format!("// info  :{}", relevant);
+            let i2 = format!("//info {}", relevant);
+            let m1 = Message::from((&i1, "//"));
+            let m2 = Message::from((&i2, "//"));
+            assert_eq!(msgrelevant, m1);
+            assert_eq!(msgrelevant, m2);
+        }
+        {
+            let d1 = format!("//debug: {}", relevant);
+            let d2 = format!("// Debug : {}", relevant);
+            let m1 = Message::from((&d1, "//"));
+            let m2 = Message::from((&d2, "//"));
+            assert_eq!(msgrelevant, m1);
+            assert_eq!(msgrelevant, m2);
+        }
+        {
+            let t1 = format!("// TRACE {}", relevant);
+            let t2 = format!("//trace  : {}", relevant);
+            let m1 = Message::from((&t1, "//"));
+            let m2 = Message::from((&t2, "//"));
+            assert_eq!(msgrelevant, m1);
+            assert_eq!(msgrelevant, m2);
+        }
+        {
+            let w1 = format!("// WaRN       {}", relevant);
+            let w2 = format!("//warn:{}", relevant);
+            let m1 = Message::from((&w1, "//"));
+            let m2 = Message::from((&w2, "//"));
+            assert_eq!(msgrelevant, m1);
+            assert_eq!(msgrelevant, m2);
         }
     }
 }
