@@ -46,8 +46,9 @@ impl Display for Language {
 
 impl Language {
     pub fn query(&self) -> &str {
+        use Language::*;
         match self {
-            Language::Golang => query_go(),
+            Golang => query_go(),
             _ => r#"()"#,
         }
     }
@@ -64,6 +65,15 @@ impl Language {
             Rust => tree_sitter_rust::language(),
         }
     }
+    pub fn comment(&self) -> &str {
+        use Language::*;
+        let slashes: &'static str = "//";
+        let slash: &'static str = "#";
+        match self {
+            Golang | C | Cpp | Java | JavaScript | Rust => slashes,
+            Python | Ruby => slash,
+        }
+    }
 }
 
 fn query_go() -> &'static str {
@@ -72,7 +82,7 @@ fn query_go() -> &'static str {
     	(
     		(comment) @severity
     	)
-        (#match? @severity "^// ([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Tt][Rr][Aa][Cc][Ee]|[Ww][Aa][Rr][Nn]|[Ff][Aa][Tt][Aa][Ll]):")
+        (#match? @severity "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Tt][Rr][Aa][Cc][Ee]|[Ww][Aa][Rr][Nn]|[Ff][Aa][Tt][Aa][Ll]):")
     )
    	.
     (comment) @subject
