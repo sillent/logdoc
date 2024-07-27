@@ -72,7 +72,7 @@ fn query_go() -> &'static str {
     	(
     		(comment) @severity
     	)
-        (#match? @severity "^// (INFO|DEBUG|TRACE|WARN|FATAL):")
+        (#match? @severity "^// ([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Tt][Rr][Aa][Cc][Ee]|[Ww][Aa][Rr][Nn]|[Ff][Aa][Tt][Aa][Ll]):")
     )
    	.
     (comment) @subject
