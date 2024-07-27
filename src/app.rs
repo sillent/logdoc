@@ -79,7 +79,11 @@ impl Application {
                 // let meta = form_meta(positions);
                 // let meta = MetaPos::from(positions);
                 // println!("metapos = {meta:?}");
-                println!("meta = {m:?}");
+                let t = files::write_to_file(m, &arg);
+                if let Err(e) = t {
+                    println!("error happened: {e:?}");
+                }
+                // println!("meta = {m:?}");
                 println!("-----");
                 // println!("{:?}", q.captures);
                 // println!("------");

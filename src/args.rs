@@ -1,8 +1,4 @@
-use std::path::PathBuf;
-
 use clap::Parser;
-
-use crate::files;
 
 #[derive(Debug, Parser, Clone)]
 #[command(name = "LogDoc")]
@@ -28,6 +24,16 @@ pub struct Arg {
     #[arg(short, long)]
     #[clap(value_parser)]
     pub language: Language,
+
+    /// Specify directory when data should be saved
+    #[arg(short, long)]
+    #[clap(default_value = ".")]
+    pub save_path: String,
+
+    /// Specify format for save data
+    #[arg(long)]
+    #[clap(value_parser, default_value = "md")]
+    pub save_type: SaveType,
 }
 
 #[derive(Debug, Parser, clap::ValueEnum, Clone)]
@@ -40,6 +46,13 @@ pub enum Language {
     JavaScript,
     Ruby,
     Rust,
+}
+
+#[derive(Debug, Parser, clap::ValueEnum, Default, Clone)]
+pub enum SaveType {
+    #[default]
+    MD,
+    CSV,
 }
 
 impl ToString for Language {
@@ -58,19 +71,17 @@ impl ToString for Language {
     }
 }
 
+impl ToString for SaveType {
+    fn to_string(&self) -> String {
+        use SaveType::*;
+        match self {
+            MD => "markdown".to_owned(),
+            CSV => "csv".to_owned(),
+        }
+    }
+}
+
 impl Arg {
-    // pub fn files_list(&self) -> Vec<String> {
-    //     let mut result = vec![];
-    //     if let Some(ref dirs) = self.directories {
-    //         for dir in dirs {
-    //             files::walk_dir(&PathBuf::from(dir), &mut result, self.recurse);
-    //         }
-    //     }
-    //     if let Some(ref files) = self.files {
-    //         files.iter().map(|x| result.push(x.clone())).count();
-    //     }
-    //     result
-    // }
     pub fn directories(&self) -> Vec<String> {
         let dirs = if let Some(dirs) = self.directories.clone() {
             dirs
@@ -80,12 +91,17 @@ impl Arg {
         dirs
     }
     pub fn directories_ref(&self) -> Vec<&String> {
-        // let res = vec![];
         if let Some(dirs) = &self.directories {
             let v = dirs.iter().map(|x| x).collect();
             return v;
         }
         return vec![];
+    }
+    pub fn file_suffix(&self) -> String {
+        match self.save_type {
+            SaveType::MD => "md".to_owned(),
+            SaveType::CSV => "csv".to_owned(),
+        }
     }
 }
 

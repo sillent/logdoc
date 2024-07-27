@@ -1,6 +1,9 @@
 use std::path::Path;
 
-use crate::{args, meta::Pos};
+use crate::{
+    args,
+    meta::{Level, Meta, Pos},
+};
 
 pub trait WalkInPosition {
     fn line_start(&self) -> usize;
@@ -95,6 +98,7 @@ fn is_hidden(entry: &std::fs::DirEntry) -> bool {
 //     }
 // }
 
+// TODO: maybe non-needed, delete
 pub fn _search_in_file<T>(data: T, pos: &Pos) -> Vec<u8>
 where
     T: AsRef<[u8]>,
@@ -148,6 +152,74 @@ where
         }
     }
     ret
+}
+
+pub fn write_to_file(meta: Meta, arg: &args::Arg) -> Result<(), Box<dyn std::error::Error>> {
+    let save_path = form_file_name(&arg.save_path.clone(), arg, meta.level);
+
+    let exist = file_exist(&save_path)?;
+    if !exist {}
+    Ok(())
+}
+
+fn form_file_name(dir: &String, arg: &args::Arg, level: Level) -> String {
+    let path = std::path::Path::new(dir);
+    return match level {
+        Level::Info => format!(
+            "{}.{}",
+            path.join("info").display().to_string(),
+            arg.file_suffix()
+        ),
+        Level::Debug => format!(
+            "{}.{}",
+            path.join("debug").display().to_string(),
+            arg.file_suffix()
+        ),
+        Level::Trace => format!(
+            "{}.{}",
+            path.join("trace").display().to_string(),
+            arg.file_suffix()
+        ),
+        Level::Warn => format!(
+            "{}.{}",
+            path.join("warn").display().to_string(),
+            arg.file_suffix()
+        ),
+        Level::Fatal => format!(
+            "{}.{}",
+            path.join("fatal").display().to_string(),
+            arg.file_suffix()
+        ),
+    };
+}
+fn file_exist(path: &String) -> Result<bool, Box<dyn std::error::Error>> {
+    let metawrap = std::fs::metadata(&path);
+    match metawrap {
+        Err(e) => match e.kind() {
+            std::io::ErrorKind::NotFound => return Ok(false),
+            _ => return Err(Box::new(e)),
+        },
+        Ok(meta) => {
+            if meta.is_file() {
+                return Ok(true);
+            }
+            if meta.is_dir() {
+                return Err("cannot save at current path - it's a dir")?;
+            }
+        }
+    }
+
+    Ok(false)
+}
+
+fn create_new(
+    path: &String,
+    arg: &args::Arg,
+    meta: &Meta,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let project = arg.project_name.clone();
+    // let level = arg.le
+    Ok(())
 }
 
 #[cfg(test)]
