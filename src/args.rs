@@ -2,7 +2,7 @@ use clap::Parser;
 
 #[derive(Debug, Parser, Clone)]
 #[command(name = "LogDoc")]
-#[command(version, about="Create .MD files with information about logs", long_about=None)]
+#[command(version, about="Create .MD or .CSV files with information about logs", long_about=None)]
 pub struct Arg {
     /// Project name (used in generated files)
     #[arg(short, long)]
@@ -31,9 +31,34 @@ pub struct Arg {
     pub save_path: String,
 
     /// Specify format for save data
-    #[arg(long)]
+    #[arg(long, short = 't')]
     #[clap(value_parser, default_value = "md")]
     pub save_type: SaveType,
+
+    /// Description for Info log
+    #[arg(long)]
+    #[clap(env = "INFO_DESC")]
+    pub info_desc: Option<String>,
+
+    /// Description for Debug log
+    #[arg(long)]
+    #[clap(env = "DEBUG_DESC")]
+    pub debug_desc: Option<String>,
+
+    /// Description for Trace log
+    #[arg(long)]
+    #[clap(env = "TRACE_DESC")]
+    pub trace_desc: Option<String>,
+
+    /// Description for Warn log
+    #[arg(long)]
+    #[clap(env = "WARN_DESC")]
+    pub warn_desc: Option<String>,
+
+    /// Description for Fatal log
+    #[arg(long)]
+    #[clap(env = "FATAL_DESC")]
+    pub fatal_desc: Option<String>,
 }
 
 #[derive(Debug, Parser, clap::ValueEnum, Clone)]

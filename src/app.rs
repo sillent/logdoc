@@ -19,6 +19,7 @@ pub struct Application;
 impl Application {
     pub fn run() -> Result<(), Box<dyn std::error::Error>> {
         let arg = args::Arg::parse();
+        println!("info desc = {:?}", arg.info_desc);
         let mut parse = tree_sitter::Parser::new();
         let lang = crate::language::Language::from(&arg.language);
         parse.set_language(&lang.sitter_language()).or(Err(format!(
