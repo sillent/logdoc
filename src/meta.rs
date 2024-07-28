@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use tree_sitter::QueryCapture;
 
 use crate::files;
@@ -53,6 +55,18 @@ pub enum Level {
     Fatal,
 }
 
+impl Display for Level {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let st = match self {
+            Level::Info => "info",
+            Level::Debug => "debug",
+            Level::Trace => "trace",
+            Level::Warn => "warn",
+            Level::Fatal => "fatal",
+        };
+        write!(f, "{}", st)
+    }
+}
 impl From<(&String, &str)> for Message {
     fn from(value: (&String, &str)) -> Self {
         let mut line = value.0.clone();

@@ -59,6 +59,21 @@ pub struct Arg {
     #[arg(long)]
     #[clap(env = "FATAL_DESC")]
     pub fatal_desc: Option<String>,
+
+    /// MarkDown Message table header
+    #[arg(long = "message_table_header")]
+    #[clap(env = "MESSAGE_TABLE_HEADER")]
+    pub message_table_header: Option<String>,
+
+    /// MarkDown Subject table header
+    #[arg(long = "subject_table_header")]
+    #[clap(env = "SUBJECT_TABLE_HEADER")]
+    pub subject_table_header: Option<String>,
+
+    /// Markdown Description table header
+    #[arg(long = "description_table_header")]
+    #[clap(env = "DESCRIPTION_TABLE_HEADER")]
+    pub description_table_header: Option<String>,
 }
 
 #[derive(Debug, Parser, clap::ValueEnum, Clone)]
@@ -73,7 +88,7 @@ pub enum Language {
     Rust,
 }
 
-#[derive(Debug, Parser, clap::ValueEnum, Default, Clone)]
+#[derive(Debug, Parser, clap::ValueEnum, Default, Clone, PartialEq, Eq)]
 pub enum SaveType {
     #[default]
     MD,

@@ -1,7 +1,7 @@
-use std::path::Path;
+use std::{io::Write, path::Path};
 
 use crate::{
-    args,
+    args::{self, SaveType},
     meta::{Level, Meta, Pos},
 };
 
@@ -155,14 +155,18 @@ where
 }
 
 pub fn write_to_file(meta: Meta, arg: &args::Arg) -> Result<(), Box<dyn std::error::Error>> {
-    let save_path = form_file_name(&arg.save_path.clone(), arg, meta.level);
+    let save_path = form_file_name(&arg.save_path.clone(), arg, &meta.level);
 
-    let exist = file_exist(&save_path)?;
-    if !exist {}
+    create_new(&save_path, &arg, &meta)?;
+    if arg.save_type == SaveType::MD {
+        write_description(&save_path, &arg, &meta)?;
+        // write_markdown_table_header(&save_path, )
+    }
+
     Ok(())
 }
 
-fn form_file_name(dir: &String, arg: &args::Arg, level: Level) -> String {
+fn form_file_name(dir: &String, arg: &args::Arg, level: &Level) -> String {
     let path = std::path::Path::new(dir);
     return match level {
         Level::Info => format!(
@@ -192,25 +196,25 @@ fn form_file_name(dir: &String, arg: &args::Arg, level: Level) -> String {
         ),
     };
 }
-fn file_exist(path: &String) -> Result<bool, Box<dyn std::error::Error>> {
-    let metawrap = std::fs::metadata(&path);
-    match metawrap {
-        Err(e) => match e.kind() {
-            std::io::ErrorKind::NotFound => return Ok(false),
-            _ => return Err(Box::new(e)),
-        },
-        Ok(meta) => {
-            if meta.is_file() {
-                return Ok(true);
-            }
-            if meta.is_dir() {
-                return Err("cannot save at current path - it's a dir")?;
-            }
-        }
-    }
+// fn file_exist(path: &String) -> Result<bool, Box<dyn std::error::Error>> {
+//     let metawrap = std::fs::metadata(&path);
+//     match metawrap {
+//         Err(e) => match e.kind() {
+//             std::io::ErrorKind::NotFound => return Ok(false),
+//             _ => return Err(Box::new(e)),
+//         },
+//         Ok(meta) => {
+//             if meta.is_file() {
+//                 return Ok(true);
+//             }
+//             if meta.is_dir() {
+//                 return Err("cannot save at current path - it's a dir")?;
+//             }
+//         }
+//     }
 
-    Ok(false)
-}
+//     Ok(false)
+// }
 
 fn create_new(
     path: &String,
@@ -218,7 +222,84 @@ fn create_new(
     meta: &Meta,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let project = arg.project_name.clone();
-    // let level = arg.le
+    let mut file = std::fs::File::create(path)?;
+    let _ = file.write(format!("# {} - {} logs\n\n", project, meta.level).as_bytes())?;
+    Ok(())
+}
+
+fn write_description(
+    path: &String,
+    arg: &args::Arg,
+    meta: &Meta,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(path)?;
+    match meta.level {
+        Level::Info => {
+            if let Some(ref desc) = arg.info_desc {
+                if desc.len() > 1 {
+                    writefiletoend(&mut file, desc)?;
+                }
+            }
+        }
+        Level::Debug => {
+            if let Some(ref desc) = arg.debug_desc {
+                if desc.len() > 1 {
+                    writefiletoend(&mut file, desc)?;
+                }
+            }
+        }
+        Level::Trace => {
+            if let Some(ref desc) = arg.trace_desc {
+                if desc.len() > 1 {
+                    writefiletoend(&mut file, desc)?;
+                }
+            }
+        }
+        Level::Warn => {
+            if let Some(ref desc) = arg.warn_desc {
+                if desc.len() > 1 {
+                    writefiletoend(&mut file, desc)?;
+                }
+            }
+        }
+        Level::Fatal => {
+            if let Some(ref desc) = arg.fatal_desc {
+                if desc.len() > 1 {
+                    writefiletoend(&mut file, desc)?;
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn writefiletoend(
+    file: &mut std::fs::File,
+    data: &String,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let data = format!("{data}\n\n");
+    file.write(data.as_bytes())?;
+    Ok(())
+}
+
+fn write_header_md(
+    path: &String,
+    arg: &args::Arg,
+    meta: &Meta,
+) -> Result<(), Box<dyn std::error::Error>> {
+    Ok(())
+}
+fn write_header_csv(
+    path: &String,
+    arg: &args::Arg,
+    meta: &Meta,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut file = std::fs::File::open(path)?;
+
     Ok(())
 }
 
