@@ -13,11 +13,7 @@ pub struct Description(pub String);
 
 #[derive(Debug, Default)]
 pub struct Meta {
-    // pub file: String,
     pub level: Level,
-    // pub message: String,
-    // pub subject: String,
-    // pub description: String,
     pub message: Message,
     pub subject: Subject,
     pub description: Description,

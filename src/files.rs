@@ -47,7 +47,6 @@ fn walk_path(
     recurse: bool,
 ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let mut files = vec![];
-    println!("read dir path = {path:?}");
     let entries = std::fs::read_dir(path)?;
     for entry in entries {
         let entry = entry?;
