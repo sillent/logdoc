@@ -49,7 +49,13 @@ impl Language {
         use Language::*;
         match self {
             Golang => query_go(),
-            _ => r#"()"#,
+            Rust => query_rust(),
+            C => query_c(),
+            Cpp => query_cpp(),
+            Ruby => query_ruby(),
+            Python => query_python(),
+            Java => query_java(),
+            JavaScript => query_javascript(),
         }
     }
     pub fn sitter_language(&self) -> tree_sitter::Language {
@@ -82,7 +88,111 @@ fn query_go() -> &'static str {
     	(
     		(comment) @severity
     	)
-        (#match? @severity "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Tt][Rr][Aa][Cc][Ee]|[Ww][Aa][Rr][Nn]|[Ff][Aa][Tt][Aa][Ll]):")
+        (#match? @severity "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Tt][Rr][Aa][Cc][Ee]|[Ww][Aa][Rr][Nn]|[Ff][Aa][Tt][Aa][Ll])")
+    )
+   	.
+    (comment) @subject
+    .
+    (comment)*? @description
+    )"#
+}
+
+fn query_rust() -> &'static str {
+    r#"(
+	(
+    	(
+    		(line_comment) @level
+    	)
+        (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll])")
+    )
+   	.
+    (line_comment) @subject
+    .
+    (line_comment)*? @description
+    )"#
+}
+
+fn query_c() -> &'static str {
+    r#"(
+	(
+    	(
+    		(comment) @level
+    	)
+        (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll])")
+    )
+   	.
+    (comment) @subject
+    .
+    (comment)*? @description
+    )"#
+}
+
+fn query_cpp() -> &'static str {
+    r#"(
+	(
+    	(
+    		(comment) @level
+    	)
+        (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll])")
+    )
+   	.
+    (comment) @subject
+    .
+    (comment)*? @description
+    )"#
+}
+
+fn query_ruby() -> &'static str {
+    r#"(
+	(
+    	(
+    		(comment) @level
+    	)
+        (#match? @level "^#(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll])")
+    )
+   	.
+    (comment) @subject
+    .
+    (comment)*? @description
+    )"#
+}
+
+fn query_python() -> &'static str {
+    r#"(
+	(
+    	(
+    		(comment) @level
+    	)
+        (#match? @level "^#(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll])")
+    )
+   	.
+    (comment) @subject
+    .
+    (comment)*? @description
+    )"#
+}
+fn query_java() -> &'static str {
+    r#"(
+	(
+    	(
+    		(line_comment) @level
+    	)
+        (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll])")
+    )
+   	.
+    (line_comment) @subject
+    .
+    (line_comment)*? @description
+    )"#
+}
+
+fn query_javascript() -> &'static str {
+    r#"(
+	(
+    	(
+    		(comment) @level
+    	)
+        (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll])")
     )
    	.
     (comment) @subject
