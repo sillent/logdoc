@@ -44,6 +44,36 @@ pub enum Level {
     Fatal,
 }
 
+impl Level {
+    fn variants(&self) -> Vec<&'static str> {
+        let mut variants = vec![];
+        use Level::*;
+        match self {
+            Info => {
+                variants.push("info:");
+                variants.push("info");
+            }
+            Debug => {
+                variants.push("debug:");
+                variants.push("debug");
+            }
+            Trace => {
+                variants.push("trace:");
+                variants.push("trace");
+            }
+            Warn => {
+                variants.push("warn:");
+                variants.push("warn");
+            }
+            Fatal => {
+                variants.push("fatal:");
+                variants.push("fatal");
+            }
+        }
+        variants
+    }
+}
+
 impl Display for Level {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let st = match self {
@@ -59,25 +89,34 @@ impl Display for Level {
 impl From<(&String, &str)> for Message {
     fn from(value: (&String, &str)) -> Self {
         let mut line = value.0.clone();
+        let level = Level::from(value.0);
         if line.to_lowercase().starts_with(value.1) {
             let l = value.1.len();
             crop_letters(&mut line, l);
             delete_spaces_dotes(&mut line);
-            let variants = vec![
-                ("info:", 5),
-                ("info", 4),
-                ("debug:", 6),
-                ("debug", 5),
-                ("trace:", 6),
-                ("trace", 5),
-                ("warn:", 5),
-                ("warn", 4),
-                ("fatal:", 6),
-                ("fatal", 5),
-            ];
-            for (variant, local) in variants {
+            // let variants = vec![
+            //     ("info:", 5),
+            //     ("info", 4),
+            //     ("debug:", 6),
+            //     ("debug", 5),
+            //     ("trace:", 6),
+            //     ("trace", 5),
+            //     ("warn:", 5),
+            //     ("warn", 4),
+            //     ("fatal:", 6),
+            //     ("fatal", 5),
+            // ];
+            // for (variant, local) in variants {
+            //     if line.to_lowercase().starts_with(variant) {
+            //         crop_letters(&mut line, local);
+            //         break;
+            //     }
+            // }
+            let level_variants = level.variants();
+            for variant in level_variants {
                 if line.to_lowercase().starts_with(variant) {
-                    crop_letters(&mut line, local);
+                    let len = line.len();
+                    crop_letters(&mut line, len);
                     break;
                 }
             }
