@@ -2,7 +2,7 @@ use std::{io::Write, path::Path};
 
 use crate::{
     args::{self, SaveType},
-    meta::{Level, Meta, Pos},
+    meta::{Level, Meta},
 };
 
 pub trait WalkInPosition {
@@ -79,53 +79,6 @@ fn is_hidden(entry: &std::fs::DirEntry) -> bool {
         .unwrap_or(false)
 }
 
-// pub fn walk_dir(path: &std::path::Path, result: &mut Vec<String>, recurse: bool) {
-//     if let Ok(entry) = std::fs::read_dir(path) {
-//         for e in entry {
-//             if let Ok(e) = e {
-//                 let path = e.path();
-//                 if path.is_dir() {
-//                     if recurse {
-//                         walk_dir(&path, result, recurse);
-//                     }
-//                 } else if path.is_file() {
-//                     if let Ok(path) = path.into_os_string().into_string() {
-//                         result.push(path);
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
-// TODO: maybe non-needed, delete
-pub fn _search_in_file<T>(data: T, pos: &Pos) -> Vec<u8>
-where
-    T: AsRef<[u8]>,
-{
-    let mut lines: Vec<Vec<u8>> = vec![];
-    let mut local_line: Vec<u8> = vec![];
-    for byte in data.as_ref() {
-        local_line.push(byte.clone());
-        if byte.eq(&10) {
-            lines.push(local_line.clone());
-            local_line.clear();
-            continue;
-        }
-    }
-    let mut ret = vec![];
-    for (line_num, line) in lines.iter().enumerate() {
-        if line_num.ge(&(pos.start.0 as usize)) && line_num.le(&(pos.end.0 as usize)) {
-            for (char_num, char) in line.iter().enumerate() {
-                if char_num.ge(&(pos.start.1 as usize)) && char_num.le(&(pos.end.1 as usize)) {
-                    ret.push(*char);
-                }
-            }
-        }
-    }
-    ret
-}
-
 pub fn search_in_file_dyn<T, W>(data: T, pos: &W) -> Vec<u8>
 where
     T: AsRef<[u8]>,
@@ -197,25 +150,6 @@ fn form_file_name(dir: &String, arg: &args::Arg, level: &Level) -> String {
         ),
     };
 }
-// fn file_exist(path: &String) -> Result<bool, Box<dyn std::error::Error>> {
-//     let metawrap = std::fs::metadata(&path);
-//     match metawrap {
-//         Err(e) => match e.kind() {
-//             std::io::ErrorKind::NotFound => return Ok(false),
-//             _ => return Err(Box::new(e)),
-//         },
-//         Ok(meta) => {
-//             if meta.is_file() {
-//                 return Ok(true);
-//             }
-//             if meta.is_dir() {
-//                 return Err("cannot save at current path - it's a dir")?;
-//             }
-//         }
-//     }
-
-//     Ok(false)
-// }
 
 fn create_new(
     path: &String,
@@ -224,7 +158,7 @@ fn create_new(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let project = arg.project_name.clone();
     let mut file = std::fs::File::create(path)?;
-    let _ = file.write(format!("# {} - {} logs\n\n", project, meta.level).as_bytes())?;
+    file.write(format!("# {} - {} logs\n\n", project, meta.level).as_bytes())?;
     Ok(())
 }
 
@@ -241,35 +175,35 @@ fn write_description(
         Level::Info => {
             if let Some(ref desc) = arg.info_desc {
                 if desc.len() > 1 {
-                    writefiletoend(&mut file, desc)?;
+                    write_file_to_end(&mut file, desc)?;
                 }
             }
         }
         Level::Debug => {
             if let Some(ref desc) = arg.debug_desc {
                 if desc.len() > 1 {
-                    writefiletoend(&mut file, desc)?;
+                    write_file_to_end(&mut file, desc)?;
                 }
             }
         }
         Level::Trace => {
             if let Some(ref desc) = arg.trace_desc {
                 if desc.len() > 1 {
-                    writefiletoend(&mut file, desc)?;
+                    write_file_to_end(&mut file, desc)?;
                 }
             }
         }
         Level::Warn => {
             if let Some(ref desc) = arg.warn_desc {
                 if desc.len() > 1 {
-                    writefiletoend(&mut file, desc)?;
+                    write_file_to_end(&mut file, desc)?;
                 }
             }
         }
         Level::Fatal => {
             if let Some(ref desc) = arg.fatal_desc {
                 if desc.len() > 1 {
-                    writefiletoend(&mut file, desc)?;
+                    write_file_to_end(&mut file, desc)?;
                 }
             }
         }
@@ -278,7 +212,7 @@ fn write_description(
     Ok(())
 }
 
-fn writefiletoend(
+fn write_file_to_end(
     file: &mut std::fs::File,
     data: &String,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -314,14 +248,12 @@ fn write_markdown_table_header(
     file.write(data.as_bytes())?;
     Ok(())
 }
+
 fn write_markdown_data(path: &String, meta: &Meta) -> Result<(), Box<dyn std::error::Error>> {
     let mut file = std::fs::File::options()
         .write(true)
         .append(true)
         .open(path)?;
-    // let message = meta.message.0.pop().clone().unwrap();
-    // let subject = meta.subject.0.pop().clone().unwrap();
-    // let description = &meta.description.0;
     let message = meta.message.format();
     let subject = meta.subject.format();
     let description = meta.description.format();
@@ -333,24 +265,6 @@ fn write_markdown_data(path: &String, meta: &Meta) -> Result<(), Box<dyn std::er
 #[cfg(test)]
 mod tests {
     use crate::{files::search_in_file_dyn, meta::Pos};
-
-    use super::_search_in_file;
-
-    #[test]
-    fn test_walk_file() {
-        let data = r#"Hello,
-December is a last month in the year
- When January comes
-All gifts are gone
-"#;
-        let pos = Pos {
-            typo: crate::meta::Typo::Level,
-            start: (2, 1),
-            end: (2, 4),
-        };
-        let result = _search_in_file(data.as_bytes(), &pos);
-        assert_eq!(vec![87u8, 104, 101, 110], result);
-    }
 
     #[test]
     fn test_walk_file_dyn() {

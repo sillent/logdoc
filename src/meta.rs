@@ -280,14 +280,6 @@ impl From<Vec<Pos>> for MetaPos {
     }
 }
 
-impl From<MetaPos> for Meta {
-    fn from(value: MetaPos) -> Self {
-        // let mut meta = Meta:
-        let mut meta = Meta::default();
-        let l = unimplemented!();
-    }
-}
-
 impl Default for MetaPos {
     fn default() -> Self {
         MetaPos {

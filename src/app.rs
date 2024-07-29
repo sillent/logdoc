@@ -1,15 +1,11 @@
 use clap::Parser;
-use tree_sitter::QueryMatches;
 
 use crate::args;
 use crate::files;
-use crate::meta;
-use crate::meta::form_meta;
 use crate::meta::Description;
 use crate::meta::Level;
 use crate::meta::Message;
 use crate::meta::Meta;
-use crate::meta::MetaPos;
 use crate::meta::Pos;
 use crate::meta::Subject;
 use crate::meta::Typo;

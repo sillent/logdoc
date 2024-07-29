@@ -2,7 +2,7 @@ use clap::Parser;
 
 #[derive(Debug, Parser, Clone)]
 #[command(name = "LogDoc")]
-#[command(version, about="Create .MD or .CSV files with information about logs", long_about=None)]
+#[command(version, about="Create .MD files with information about logs", long_about=None)]
 pub struct Arg {
     /// Project name (used in generated files)
     #[arg(short, long)]
@@ -92,7 +92,6 @@ pub enum Language {
 pub enum SaveType {
     #[default]
     MD,
-    CSV,
 }
 
 impl ToString for Language {
@@ -116,7 +115,6 @@ impl ToString for SaveType {
         use SaveType::*;
         match self {
             MD => "markdown".to_owned(),
-            CSV => "csv".to_owned(),
         }
     }
 }
@@ -140,7 +138,6 @@ impl Arg {
     pub fn file_suffix(&self) -> String {
         match self.save_type {
             SaveType::MD => "md".to_owned(),
-            SaveType::CSV => "csv".to_owned(),
         }
     }
 }
