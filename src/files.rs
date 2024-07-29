@@ -1,4 +1,4 @@
-use std::{io::Write, path::Path};
+use std::{fs::File, io::Write, path::Path};
 
 use crate::{
     args::{self, SaveType},
@@ -107,13 +107,13 @@ where
 }
 
 pub fn write_to_file(meta: Meta, arg: &args::Arg) -> Result<(), Box<dyn std::error::Error>> {
-    let save_path = form_file_name(&arg.save_path.clone(), arg, &meta.level);
+    let save_path = form_file_name(&arg.save_path, arg, &meta.level);
 
-    create_new(&save_path, &arg, &meta)?;
+    let mut file = create_new(&save_path, &arg, &meta)?;
     if arg.save_type == SaveType::MD {
-        write_description(&save_path, &arg, &meta)?;
-        write_markdown_table_header(&save_path, &arg)?;
-        write_markdown_data(&save_path, &meta)?;
+        write_description(&mut file, &arg, &meta)?;
+        write_markdown_table_header(&mut file, &arg)?;
+        write_markdown_data(&mut file, &meta)?;
     }
 
     Ok(())
@@ -154,22 +154,18 @@ fn create_new(
     path: &String,
     arg: &args::Arg,
     meta: &Meta,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<std::fs::File, Box<dyn std::error::Error>> {
     let project = arg.project_name.clone();
     let mut file = std::fs::File::create(path)?;
     file.write(format!("# {} - {} logs\n\n", project, meta.level).as_bytes())?;
-    Ok(())
+    Ok(file)
 }
 
 fn write_description(
-    path: &String,
+    mut file: &File,
     arg: &args::Arg,
     meta: &Meta,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut file = std::fs::OpenOptions::new()
-        .write(true)
-        .append(true)
-        .open(path)?;
     match meta.level {
         Level::Info => {
             if let Some(ref desc) = arg.info_desc {
@@ -212,7 +208,7 @@ fn write_description(
 }
 
 fn write_file_to_end(
-    file: &mut std::fs::File,
+    mut file: &std::fs::File,
     data: &String,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let data = format!("{data}\n\n");
@@ -221,13 +217,9 @@ fn write_file_to_end(
 }
 
 fn write_markdown_table_header(
-    path: &String,
+    mut file: &File,
     arg: &args::Arg,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut file = std::fs::File::options()
-        .write(true)
-        .append(true)
-        .open(path)?;
     let mut msg_header = "error message";
     let mut subject_header = "subject";
     let mut description_header = "description";
@@ -248,11 +240,7 @@ fn write_markdown_table_header(
     Ok(())
 }
 
-fn write_markdown_data(path: &String, meta: &Meta) -> Result<(), Box<dyn std::error::Error>> {
-    let mut file = std::fs::File::options()
-        .write(true)
-        .append(true)
-        .open(path)?;
+fn write_markdown_data(mut file: &File, meta: &Meta) -> Result<(), Box<dyn std::error::Error>> {
     let message = meta.message.format();
     let subject = meta.subject.format();
     let description = meta.description.format();
