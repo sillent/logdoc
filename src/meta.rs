@@ -94,28 +94,10 @@ impl From<(&String, &str)> for Message {
             let l = value.1.len();
             crop_letters(&mut line, l);
             delete_spaces_dotes(&mut line);
-            // let variants = vec![
-            //     ("info:", 5),
-            //     ("info", 4),
-            //     ("debug:", 6),
-            //     ("debug", 5),
-            //     ("trace:", 6),
-            //     ("trace", 5),
-            //     ("warn:", 5),
-            //     ("warn", 4),
-            //     ("fatal:", 6),
-            //     ("fatal", 5),
-            // ];
-            // for (variant, local) in variants {
-            //     if line.to_lowercase().starts_with(variant) {
-            //         crop_letters(&mut line, local);
-            //         break;
-            //     }
-            // }
             let level_variants = level.variants();
             for variant in level_variants {
                 if line.to_lowercase().starts_with(variant) {
-                    let len = line.len();
+                    let len = variant.len();
                     crop_letters(&mut line, len);
                     break;
                 }
