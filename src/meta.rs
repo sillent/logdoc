@@ -23,13 +23,6 @@ pub struct Meta {
     pub description: Description,
 }
 
-#[derive(Debug)]
-pub struct MetaPos {
-    pub comment1: Pos,
-    pub comment2: Pos,
-    pub comment3: Vec<Pos>,
-}
-
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum Typo {
     #[default]
@@ -251,50 +244,6 @@ impl files::WalkInPosition for Pos {
     }
     fn pos_end(&self) -> usize {
         self.end.1 as usize
-    }
-}
-
-pub fn form_meta(pos: Vec<Pos>) -> MetaPos {
-    let mut mpos = MetaPos::default();
-    for p in pos {
-        match p.typo {
-            Typo::Level => mpos.comment1 = p,
-            Typo::Subject => mpos.comment2 = p,
-            Typo::Description => mpos.comment3.push(p),
-        }
-    }
-    mpos
-}
-
-impl From<Vec<Pos>> for MetaPos {
-    fn from(values: Vec<Pos>) -> Self {
-        let mut mpos = MetaPos::default();
-        for value in values {
-            match value.typo {
-                Typo::Level => mpos.comment1 = value,
-                Typo::Subject => mpos.comment2 = value,
-                Typo::Description => mpos.comment3.push(value),
-            }
-        }
-        mpos
-    }
-}
-
-impl Default for MetaPos {
-    fn default() -> Self {
-        MetaPos {
-            comment1: Pos {
-                typo: Typo::Level,
-                start: (0, 0),
-                end: (0, 0),
-            },
-            comment2: Pos {
-                typo: Typo::Subject,
-                start: (0, 0),
-                end: (0, 0),
-            },
-            comment3: vec![],
-        }
     }
 }
 
