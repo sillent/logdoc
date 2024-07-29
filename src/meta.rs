@@ -5,9 +5,9 @@ use tree_sitter::QueryCapture;
 use crate::files;
 
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
-pub struct Message(String);
+pub struct Message(pub String);
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
-pub struct Subject(String);
+pub struct Subject(pub String);
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub struct Description(pub String);
 
@@ -95,6 +95,40 @@ impl From<(&String, &str)> for Message {
             delete_spaces_dotes(&mut line);
         }
         Message(line)
+    }
+}
+
+impl Message {
+    pub fn format(&self) -> String {
+        let mut msg = self.0.clone();
+        if msg.ends_with("\n") {
+            msg.pop();
+            msg
+        } else {
+            msg
+        }
+    }
+}
+
+impl Subject {
+    pub fn format(&self) -> String {
+        let mut msg = self.0.clone();
+        if msg.ends_with("\n") {
+            msg.pop();
+            msg
+        } else {
+            msg
+        }
+    }
+}
+
+impl Description {
+    pub fn format(&self) -> String {
+        let mut msg = self.0.clone();
+        if msg.ends_with("\n") {
+            msg.pop();
+        }
+        msg.replace("\n", "<br/>")
     }
 }
 

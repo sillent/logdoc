@@ -160,7 +160,8 @@ pub fn write_to_file(meta: Meta, arg: &args::Arg) -> Result<(), Box<dyn std::err
     create_new(&save_path, &arg, &meta)?;
     if arg.save_type == SaveType::MD {
         write_description(&save_path, &arg, &meta)?;
-        // write_markdown_table_header(&save_path, )
+        write_markdown_table_header(&save_path, &arg)?;
+        write_markdown_data(&save_path, &meta)?;
     }
 
     Ok(())
@@ -286,20 +287,46 @@ fn writefiletoend(
     Ok(())
 }
 
-fn write_header_md(
+fn write_markdown_table_header(
     path: &String,
     arg: &args::Arg,
-    meta: &Meta,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let mut file = std::fs::File::options()
+        .write(true)
+        .append(true)
+        .open(path)?;
+    let mut msg_header = "error message";
+    let mut subject_header = "subject";
+    let mut description_header = "description";
+    if let Some(ref msg) = arg.message_table_header {
+        msg_header = msg;
+    }
+    if let Some(ref subj) = arg.subject_table_header {
+        subject_header = subj;
+    }
+    if let Some(ref desc) = arg.description_table_header {
+        description_header = desc;
+    }
+    let data = format!(
+        "|{}|{}|{}|\n|---|---|---|\n",
+        msg_header, subject_header, description_header
+    );
+    file.write(data.as_bytes())?;
     Ok(())
 }
-fn write_header_csv(
-    path: &String,
-    arg: &args::Arg,
-    meta: &Meta,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let mut file = std::fs::File::open(path)?;
-
+fn write_markdown_data(path: &String, meta: &Meta) -> Result<(), Box<dyn std::error::Error>> {
+    let mut file = std::fs::File::options()
+        .write(true)
+        .append(true)
+        .open(path)?;
+    // let message = meta.message.0.pop().clone().unwrap();
+    // let subject = meta.subject.0.pop().clone().unwrap();
+    // let description = &meta.description.0;
+    let message = meta.message.format();
+    let subject = meta.subject.format();
+    let description = meta.description.format();
+    let data = format!("|{}|{}|{}|\n", message, subject, description);
+    file.write(data.as_bytes())?;
     Ok(())
 }
 
