@@ -46,31 +46,24 @@ pub enum Level {
 
 impl Level {
     fn variants(&self) -> Vec<&'static str> {
-        let mut variants = vec![];
         use Level::*;
         match self {
             Info => {
-                variants.push("info:");
-                variants.push("info");
+                vec!["info:", "info"]
             }
             Debug => {
-                variants.push("debug:");
-                variants.push("debug");
+                vec!["debug:", "debug"]
             }
             Trace => {
-                variants.push("trace:");
-                variants.push("trace");
+                vec!["trace:", "trace"]
             }
             Warn => {
-                variants.push("warn:");
-                variants.push("warn");
+                vec!["warn:", "warn"]
             }
             Fatal => {
-                variants.push("fatal:");
-                variants.push("fatal");
+                vec!["fatal:", "fatal"]
             }
         }
-        variants
     }
 }
 
