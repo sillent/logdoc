@@ -16,4 +16,7 @@ func main() {
 	// undefined behavior
 	// call admin
 	log.Fatal("just fatal log")
+	// info other info log
+	// only subject
+	log.Info("other info log")
 }
