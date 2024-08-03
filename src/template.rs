@@ -99,8 +99,12 @@ fn template(save_type: &args::SaveType) -> String {
 |---|---|---|
 {{#each metas as |meta|}}
 | {{meta.message}} | {{meta.subject}} |{{{meta.description}}} |
-{{/each}}
-"#,
+{{/each}}"#,
+        ),
+        args::SaveType::CSV => String::from(
+            r#"{{#each metas as |meta|}}
+{{meta.message}};{{meta.subject}};{{meta.description}}
+{{/each}}"#,
         ),
     }
 }
