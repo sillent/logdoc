@@ -116,11 +116,13 @@ mod tests {
     #[test]
     fn render_test() {
         let st = args::SaveType::MD;
+        #[allow(unused_variables)]
         let tm1 = TemplateMeta {
             message: "test message".to_string(),
             subject: "do nothing".to_string(),
             description: "".to_string(),
         };
+        #[allow(unused_variables)]
         let tm2 = TemplateMeta {
             message: "test message".to_string(),
             subject: "do nothing".to_string(),

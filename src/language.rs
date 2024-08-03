@@ -12,6 +12,12 @@ pub enum Language {
     Rust,
 }
 
+#[derive(Debug, Clone)]
+pub enum Comment {
+    Dash,
+    Slash,
+}
+
 impl From<&crate::args::Language> for Language {
     fn from(value: &crate::args::Language) -> Self {
         use crate::args;
@@ -24,6 +30,16 @@ impl From<&crate::args::Language> for Language {
             args::Language::JavaScript => Self::JavaScript,
             args::Language::Ruby => Self::Ruby,
             args::Language::Rust => Self::Rust,
+        }
+    }
+}
+
+impl Display for Comment {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use Comment::*;
+        match self {
+            Dash => write!(f, "#"),
+            Slash => write!(f, "//"),
         }
     }
 }
@@ -71,13 +87,11 @@ impl Language {
             Rust => tree_sitter_rust::language(),
         }
     }
-    pub fn comment(&self) -> &str {
+    pub fn comment(&self) -> Comment {
         use Language::*;
-        let slashes: &'static str = "//";
-        let slash: &'static str = "#";
         match self {
-            Golang | C | Cpp | Java | JavaScript | Rust => slashes,
-            Python | Ruby => slash,
+            Golang | C | Cpp | Java | JavaScript | Rust => Comment::Slash,
+            Python | Ruby => Comment::Dash,
         }
     }
 }

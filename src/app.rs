@@ -9,7 +9,6 @@ use crate::meta::Meta;
 use crate::meta::Pos;
 use crate::meta::Subject;
 use crate::meta::Typo;
-use crate::template;
 use crate::template::render;
 use crate::template::TemplateData;
 
@@ -28,8 +27,6 @@ impl Application {
 
         let query = tree_sitter::Query::new(&lang.sitter_language(), &lang.query())?;
         let language_comment = lang.comment();
-        // let mut metas = vec![];
-        // let mut template_meta =
 
         let mut template_data_info =
             TemplateData::new(&arg.project_name, Level::Info, &arg.info_desc);
@@ -61,35 +58,28 @@ impl Application {
                     let query_bytes = files::search_in_file_dyn(&file_bytes.as_bytes(), &position);
                     let data = String::from_utf8_lossy(&query_bytes).to_string();
                     if position.typo == Typo::Level {
-                        let level = Level::from(&data);
+                        let level = Level::from((&data, &language_comment));
                         m.level = level;
-                        m.message = Message::from((&data, language_comment));
+                        m.message = Message::from((&data, &language_comment));
                     }
                     if position.typo == Typo::Subject {
-                        m.subject = Subject::from((&data, language_comment));
+                        m.subject = Subject::from((&data, &language_comment));
                     }
                     if position.typo == Typo::Description {
-                        let desc = Description::from((&data, language_comment));
+                        let desc = Description::from((&data, &language_comment));
                         let v = vec![m.description.0.clone(), desc.0];
-                        let v = Description::from((&v.join("").to_string(), language_comment));
+                        let v = Description::from((&v.join("").to_string(), &language_comment));
                         m.description = v;
                     }
                 }
                 let tmeta = crate::template::TemplateMeta::from(&m);
-                println!("tmeta = {tmeta:?}");
                 match m.level {
                     Level::Info => template_data_info.add_meta(tmeta),
                     Level::Debug => template_data_debug.add_meta(tmeta),
                     Level::Warn => template_data_warn.add_meta(tmeta),
-                    Level::Trace => template_data_warn.add_meta(tmeta),
+                    Level::Trace => template_data_trace.add_meta(tmeta),
                     Level::Fatal => template_data_fatal.add_meta(tmeta),
                 }
-                println!("tmdata = {template_data_info:?}");
-                // metas.push(m);
-                // let t = files::write_to_file(m, &arg);
-                // if let Err(e) = t {
-                //     println!("error happened: {e:?}");
-                // }
             }
         }
         let template_str_info = render(template_data_info, &arg.save_type)?;

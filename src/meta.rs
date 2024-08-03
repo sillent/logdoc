@@ -79,14 +79,21 @@ impl Display for Level {
         write!(f, "{}", st)
     }
 }
-impl From<(&String, &str)> for Message {
-    fn from(value: (&String, &str)) -> Self {
+impl<T> From<(&String, &T)> for Message
+where
+    T: Display,
+{
+    fn from(value: (&String, &T)) -> Self {
         let mut line = value.0.clone();
-        let level = Level::from(value.0);
-        if line.to_lowercase().starts_with(value.1) {
-            let l = value.1.len();
+        let level = Level::from((value.0, value.1));
+        if line
+            .to_lowercase()
+            .starts_with(format!("{}", value.1).as_str())
+        {
+            let l = format!("{}", value.1).len();
             crop_letters(&mut line, l);
             delete_spaces_dotes(&mut line);
+
             let level_variants = level.variants();
             for variant in level_variants {
                 if line.to_lowercase().starts_with(variant) {
@@ -135,22 +142,34 @@ impl Description {
     }
 }
 
-impl From<(&String, &str)> for Subject {
-    fn from(value: (&String, &str)) -> Self {
+impl<T> From<(&String, &T)> for Subject
+where
+    T: Display,
+{
+    fn from(value: (&String, &T)) -> Self {
         let mut line = value.0.clone();
-        if line.to_lowercase().starts_with(value.1) {
-            let l = value.1.len();
+        if line
+            .to_lowercase()
+            .starts_with(format!("{}", value.1).as_str())
+        {
+            let l = format!("{}", value.1).len();
             crop_letters(&mut line, l);
             delete_spaces_dotes(&mut line);
         }
         Subject(line)
     }
 }
-impl From<(&String, &str)> for Description {
-    fn from(value: (&String, &str)) -> Self {
+impl<T> From<(&String, &T)> for Description
+where
+    T: Display,
+{
+    fn from(value: (&String, &T)) -> Self {
         let mut line = value.0.clone();
-        if line.to_lowercase().starts_with(value.1) {
-            let l = value.1.len();
+        if line
+            .to_lowercase()
+            .starts_with(format!("{}", value.1).as_str())
+        {
+            let l = format!("{}", value.1).len();
             crop_letters(&mut line, l);
             delete_spaces_dotes(&mut line);
         }
@@ -181,22 +200,29 @@ fn crop_letters(s: &mut String, pos: usize) {
     }
 }
 
-impl From<&String> for Level {
-    fn from(value: &String) -> Self {
-        let v = value.clone();
-        if v.to_lowercase().starts_with("// info") || v.to_lowercase().starts_with("//info") {
+impl<T> From<(&String, &T)> for Level
+where
+    T: Display,
+{
+    fn from(value: (&String, &T)) -> Self {
+        let comment = format!("{}", value.1);
+        let comment_len = comment.len();
+        let mut line = value.0.to_owned();
+        crop_letters(&mut line, comment_len);
+        delete_spaces_dotes(&mut line);
+        if line.to_lowercase().starts_with("info:") || line.to_lowercase().starts_with("info") {
             return Level::Info;
         }
-        if v.to_lowercase().starts_with("// debug") || v.to_lowercase().starts_with("//debug") {
+        if line.to_lowercase().starts_with("debug:") || line.to_lowercase().starts_with("debug") {
             return Level::Debug;
         }
-        if v.to_lowercase().starts_with("// trace") || v.to_lowercase().starts_with("//trace") {
+        if line.to_lowercase().starts_with("trace:") || line.to_lowercase().starts_with("trace") {
             return Level::Trace;
         }
-        if v.to_lowercase().starts_with("// fatal") || v.to_lowercase().starts_with("//fatal") {
+        if line.to_lowercase().starts_with("fatal:") || line.to_lowercase().starts_with("fatal") {
             return Level::Fatal;
         }
-        if v.to_lowercase().starts_with("// warn") || v.to_lowercase().starts_with("//warn") {
+        if line.to_lowercase().starts_with("warn:") || line.to_lowercase().starts_with("warn") {
             return Level::Warn;
         }
         return Level::Info;
@@ -259,16 +285,18 @@ impl files::WalkInPosition for Pos {
 
 #[cfg(test)]
 mod tests {
+    use crate::language::Comment;
+
     use super::*;
 
     #[test]
     fn check_level_from_string() {
         let d1 = String::from("// DEBUG: debug message");
-        assert_eq!(Level::from(&d1), Level::Debug);
+        assert_eq!(Level::from((&d1, &Comment::Slash)), Level::Debug);
         let d2 = String::from("// trace: trace message");
-        assert_eq!(Level::from(&d2), Level::Trace);
+        assert_eq!(Level::from((&d2, &Comment::Slash)), Level::Trace);
         let d3 = String::from("// no level message");
-        assert_eq!(Level::from(&d3), Level::Info);
+        assert_eq!(Level::from((&d3, &Comment::Slash)), Level::Info);
     }
 
     #[test]
@@ -279,34 +307,39 @@ mod tests {
         {
             let i1 = format!("// info  :{}", relevant);
             let i2 = format!("//info {}", relevant);
-            let m1 = Message::from((&i1, "//"));
-            let m2 = Message::from((&i2, "//"));
+            let m1 = Message::from((&i1, &Comment::Slash));
+            let m2 = Message::from((&i2, &Comment::Slash));
             assert_eq!(msgrelevant, m1);
             assert_eq!(msgrelevant, m2);
         }
         {
             let d1 = format!("//debug: {}", relevant);
             let d2 = format!("// Debug : {}", relevant);
-            let m1 = Message::from((&d1, "//"));
-            let m2 = Message::from((&d2, "//"));
+            let m1 = Message::from((&d1, &Comment::Slash));
+            let m2 = Message::from((&d2, &Comment::Slash));
             assert_eq!(msgrelevant, m1);
             assert_eq!(msgrelevant, m2);
         }
         {
             let t1 = format!("// TRACE {}", relevant);
             let t2 = format!("//trace  : {}", relevant);
-            let m1 = Message::from((&t1, "//"));
-            let m2 = Message::from((&t2, "//"));
+            let m1 = Message::from((&t1, &Comment::Slash));
+            let m2 = Message::from((&t2, &Comment::Slash));
             assert_eq!(msgrelevant, m1);
             assert_eq!(msgrelevant, m2);
         }
         {
             let w1 = format!("// WaRN       {}", relevant);
             let w2 = format!("//warn:{}", relevant);
-            let m1 = Message::from((&w1, "//"));
-            let m2 = Message::from((&w2, "//"));
+            let m1 = Message::from((&w1, &Comment::Slash));
+            let m2 = Message::from((&w2, &Comment::Slash));
             assert_eq!(msgrelevant, m1);
             assert_eq!(msgrelevant, m2);
+        }
+        {
+            let w1 = format!("# TRACE {}", relevant);
+            let m1 = Message::from((&w1, &Comment::Dash));
+            assert_eq!(msgrelevant, m1);
         }
     }
 }
