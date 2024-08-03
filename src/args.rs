@@ -92,6 +92,7 @@ pub enum Language {
 pub enum SaveType {
     #[default]
     MD,
+    CSV,
 }
 
 impl ToString for Language {
@@ -115,6 +116,7 @@ impl ToString for SaveType {
         use SaveType::*;
         match self {
             MD => "markdown".to_owned(),
+            CSV => "csv".to_owned(),
         }
     }
 }
@@ -138,6 +140,7 @@ impl Arg {
     pub fn file_suffix(&self) -> String {
         match self.save_type {
             SaveType::MD => "md".to_owned(),
+            SaveType::CSV => "csv".to_owned(),
         }
     }
 }
