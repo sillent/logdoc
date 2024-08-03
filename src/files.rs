@@ -1,4 +1,4 @@
-use std::{fs::File, io::Write, path::Path};
+use std::{error::Error, fs::File, io::Write, path::Path};
 
 use crate::{
     args::{self, SaveType},
@@ -148,6 +148,19 @@ fn form_file_name(dir: &String, arg: &args::Arg, level: &Level) -> String {
             arg.file_suffix()
         ),
     };
+}
+
+pub fn save_string_to_file<T>(data: T, level: &Level, arg: &args::Arg) -> Result<(), Box<dyn Error>>
+where
+    T: AsRef<[u8]>,
+{
+    let save_path = form_file_name(&arg.save_path, arg, level);
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .write(true)
+        .open(&save_path)?;
+    file.write(data.as_ref())?;
+    Ok(())
 }
 
 fn create_new(
