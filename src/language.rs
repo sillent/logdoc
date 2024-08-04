@@ -18,6 +18,11 @@ pub enum Comment {
     Slash,
 }
 
+impl Comment {
+    pub fn variants() -> Vec<Self> {
+        vec![Self::Dash, Self::Slash]
+    }
+}
 impl From<&crate::args::Language> for Language {
     fn from(value: &crate::args::Language) -> Self {
         use crate::args;

@@ -291,18 +291,74 @@ mod tests {
 
     #[test]
     fn check_level_from_string() {
-        let d1 = String::from("// DEBUG: debug message");
-        assert_eq!(Level::from((&d1, &Comment::Slash)), Level::Debug);
-        let d2 = String::from("// trace: trace message");
-        assert_eq!(Level::from((&d2, &Comment::Slash)), Level::Trace);
-        let d3 = String::from("// no level message");
-        assert_eq!(Level::from((&d3, &Comment::Slash)), Level::Info);
+        let comments = vec![Comment::Slash, Comment::Dash];
+        let variants: Vec<(Level, Vec<&'static str>)> = vec![
+            (Level::Info, Level::Info.variants()),
+            (Level::Debug, Level::Debug.variants()),
+            (Level::Trace, Level::Trace.variants()),
+            (Level::Warn, Level::Warn.variants()),
+            (Level::Fatal, Level::Fatal.variants()),
+        ];
+        // .into_iter()
+        // .flatten()
+        // .collect();
+        for (l, vs) in variants {
+            for comment in &comments {
+                for v in &vs {
+                    let st = format!("{} {} message", comment, v);
+                    let cur_level = Level::from((&st, &comment));
+                    assert_eq!(l, cur_level);
+                }
+            }
+        }
+
+        // let d1 = String::from("// DEBUG: debug message");
+        // assert_eq!(Level::from((&d1, &Comment::Slash)), Level::Debug);
+        // let d2 = String::from("// trace: trace message");
+        // assert_eq!(Level::from((&d2, &Comment::Slash)), Level::Trace);
+        // let d3 = String::from("// no level message");
+        // assert_eq!(Level::from((&d3, &Comment::Slash)), Level::Info);
+    }
+
+    #[test]
+    fn check_from() {
+        let comments = Comment::variants();
+        let variants: Vec<&'static str> = vec![
+            Level::Info.variants(),
+            Level::Debug.variants(),
+            Level::Trace.variants(),
+            Level::Warn.variants(),
+            Level::Fatal.variants(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
+
+        let relevant_str = "test message";
+        let relevant_message = Message(String::from(relevant_str));
+        let relevant_subject = Subject(String::from(relevant_str));
+        let relevant_desc = Description(String::from(relevant_str));
+
+        for variant in variants {
+            for comment in &comments {
+                let s = format!("{} {} {}", comment, variant, relevant_str);
+                let m = Message::from((&s, &comment));
+                assert_eq!(relevant_message, m);
+            }
+        }
+        for comment in &comments {
+            let txt = format!("{} {}", comment, relevant_str);
+            let s = Subject::from((&txt, &comment));
+            let d = Description::from((&txt, &comment));
+            assert_eq!(relevant_subject, s);
+            assert_eq!(relevant_desc, d);
+        }
     }
 
     #[test]
     fn check_message_from_string() {
-        let relevant = String::from("test Message");
-        let msgrelevant = Message(relevant.clone());
+        let relevant = "test Message";
+        let msgrelevant = Message(relevant.to_owned());
 
         {
             let i1 = format!("// info  :{}", relevant);
@@ -339,6 +395,11 @@ mod tests {
         {
             let w1 = format!("# TRACE {}", relevant);
             let m1 = Message::from((&w1, &Comment::Dash));
+            assert_eq!(msgrelevant, m1);
+        }
+        {
+            let f1 = format!("# FATAL: {}", relevant);
+            let m1 = Message::from((&f1, &Comment::Dash));
             assert_eq!(msgrelevant, m1);
         }
     }
