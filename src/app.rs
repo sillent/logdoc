@@ -60,7 +60,7 @@ impl Application {
                     if position.typo == Typo::Level {
                         let level = Level::from((&data, &language_comment));
                         m.level = level;
-                        m.message = Message::from((&data, &language_comment));
+                        m.message = Message::try_from((&data, &language_comment))?;
                     }
                     if position.typo == Typo::Subject {
                         m.subject = Subject::from((&data, &language_comment));

@@ -8,15 +8,19 @@ func main() {
 	// just string
 	log.Info("test log")
 	// DEBUG: test debug log
-	// debug information
+	// mation
+	// description message
 	log.Debug("test debug log")
+	// debug test debug too
+	// this message is debug level
+	log.Debug("test debug too")
 	// this part is skipped
 	log.Info("skipped log")
 	// Fatal just fatal log
 	// undefined behavior
 	// call admin
 	log.Fatal("just fatal log")
-	// info other info log
+	// info: other info log
 	// only subject
 	log.Info("other info log")
 }
