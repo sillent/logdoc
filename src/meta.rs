@@ -79,58 +79,22 @@ impl Display for Level {
         write!(f, "{}", st)
     }
 }
-// impl<T> From<(&String, &T)> for Message
-// where
-//     T: Display,
-// {
-//     fn from(value: (&String, &T)) -> Self {
-//         let mut line = value.0.clone();
-//         let level = Level::from((value.0, value.1));
-//         // println!("level = {}", level);
-//         if line
-//             .to_lowercase()
-//             .starts_with(format!("{}", value.1).as_str())
-//         {
-//             let l = format!("{}", value.1).len();
-//             crop_letters(&mut line, l);
-//             // println!("after crop = {line}");
-//             delete_spaces_dotes(&mut line);
-//             // delete_spaces(&mut line);
 
-//             let level_variants = level.variants();
-//             for variant in level_variants {
-//                 if line.to_lowercase().starts_with(variant) {
-//                     let len = variant.len();
-//                     crop_letters(&mut line, len);
-//                     break;
-//                 }
-//             }
-//             delete_spaces_dotes(&mut line);
-//             println!("line = {line}");
-//             // delete_spaces(&mut line);
-//         }
-//         Message(line)
-//     }
-// }
 impl<T> TryFrom<(&String, &T)> for Message
 where
     T: Display,
 {
     type Error = &'static str;
     fn try_from(value: (&String, &T)) -> Result<Self, Self::Error> {
-        // fn from(value: (&String, &T)) -> Self {
         let mut line = value.0.clone();
         let level = Level::from((value.0, value.1));
-        // println!("level = {}", level);
         if line
             .to_lowercase()
             .starts_with(format!("{}", value.1).as_str())
         {
             let l = format!("{}", value.1).len();
             crop_letters(&mut line, l);
-            // println!("after crop = {line}");
             delete_spaces_dotes(&mut line);
-            // delete_spaces(&mut line);
 
             let level_variants = level.variants();
             for variant in level_variants {
@@ -139,15 +103,9 @@ where
                     crop_letters(&mut line, len);
                     delete_spaces_dotes(&mut line);
                     return Ok(Message(line));
-                    // break;
                 }
             }
-            // delete_spaces_dotes(&mut line);
-
-            // println!("line = {line}");
-            // delete_spaces(&mut line);
         }
-        // Message(line)
         Err("unexpected")
     }
 }
@@ -264,7 +222,6 @@ where
         let comment_len = comment.len();
         let mut line = value.0.to_owned();
         crop_letters(&mut line, comment_len);
-        // delete_spaces_dotes(&mut line);
         delete_spaces(&mut line);
         if line.to_lowercase().starts_with("info") {
             crop_letters(&mut line, 4);
@@ -272,7 +229,6 @@ where
             if line.to_lowercase().starts_with(":") {
                 return Level::Info;
             }
-            // return Level::Info;
         }
         if line.to_lowercase().starts_with("debug") {
             crop_letters(&mut line, 5);
@@ -280,7 +236,6 @@ where
             if line.to_lowercase().starts_with(":") {
                 return Level::Debug;
             }
-            // return Level::Debug;
         }
         if line.to_lowercase().starts_with("trace") {
             crop_letters(&mut line, 5);
@@ -288,7 +243,6 @@ where
             if line.to_lowercase().starts_with(":") {
                 return Level::Trace;
             }
-            // return Level::Trace;
         }
         if line.to_lowercase().starts_with("fatal") {
             crop_letters(&mut line, 5);
@@ -296,7 +250,6 @@ where
             if line.to_lowercase().starts_with(":") {
                 return Level::Fatal;
             }
-            // return Level::Fatal;
         }
         if line.to_lowercase().starts_with("warn") {
             crop_letters(&mut line, 4);
@@ -304,7 +257,6 @@ where
             if line.to_lowercase().starts_with(":") {
                 return Level::Warn;
             }
-            // return Level::Warn;
         }
         return Level::Info;
     }
@@ -380,9 +332,6 @@ mod tests {
             (Level::Warn, Level::Warn.variants()),
             (Level::Fatal, Level::Fatal.variants()),
         ];
-        // .into_iter()
-        // .flatten()
-        // .collect();
         for (l, vs) in variants {
             for comment in &comments {
                 for v in &vs {
@@ -392,13 +341,6 @@ mod tests {
                 }
             }
         }
-
-        // let d1 = String::from("// DEBUG: debug message");
-        // assert_eq!(Level::from((&d1, &Comment::Slash)), Level::Debug);
-        // let d2 = String::from("// trace: trace message");
-        // assert_eq!(Level::from((&d2, &Comment::Slash)), Level::Trace);
-        // let d3 = String::from("// no level message");
-        // assert_eq!(Level::from((&d3, &Comment::Slash)), Level::Info);
     }
 
     #[test]
@@ -443,11 +385,8 @@ mod tests {
 
         {
             let i1 = format!("// info: {}", relevant);
-            // let i2 = format!("//info {}", relevant);
             let m1 = Message::try_from((&i1, &Comment::Slash)).unwrap();
-            // let m2 = Message::from((&i2, &Comment::Slash));
             assert_eq!(msgrelevant, m1);
-            // assert_eq!(msgrelevant, m2);
         }
         {
             let d1 = format!("//debug: {}", relevant);
@@ -458,19 +397,13 @@ mod tests {
             assert_eq!(msgrelevant, m2);
         }
         {
-            // let t1 = format!("// TRACE {}", relevant);
             let t2 = format!("//trace: {}", relevant);
-            // let m1 = Message::from((&t1, &Comment::Slash));
             let m2 = Message::try_from((&t2, &Comment::Slash)).unwrap();
-            // assert_eq!(msgrelevant, m1);
             assert_eq!(msgrelevant, m2);
         }
         {
-            // let w1 = format!("// WaRN       {}", relevant);
             let w2 = format!("//warn:{}", relevant);
-            // let m1 = Message::from((&w1, &Comment::Slash));
             let m2 = Message::try_from((&w2, &Comment::Slash)).unwrap();
-            // assert_eq!(msgrelevant, m1);
             assert_eq!(msgrelevant, m2);
         }
         {
