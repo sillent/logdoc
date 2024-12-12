@@ -142,6 +142,11 @@ fn form_file_name(dir: &String, arg: &args::Arg, level: &Level) -> String {
             path.join("warn").display().to_string(),
             arg.file_suffix()
         ),
+        Level::Error => format!(
+            "{}.{}",
+            path.join("error").display().to_string(),
+            arg.file_suffix()
+        ),
         Level::Fatal => format!(
             "{}.{}",
             path.join("fatal").display().to_string(),
@@ -203,6 +208,13 @@ fn write_description(
         }
         Level::Warn => {
             if let Some(ref desc) = arg.warn_desc {
+                if desc.len() > 1 {
+                    write_file_to_end(&mut file, desc)?;
+                }
+            }
+        }
+        Level::Error => {
+            if let Some(ref desc) = arg.error_desc {
                 if desc.len() > 1 {
                     write_file_to_end(&mut file, desc)?;
                 }

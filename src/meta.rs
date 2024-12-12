@@ -14,17 +14,18 @@ pub struct Description(pub String);
 #[derive(Debug, Default)]
 pub struct Meta {
     pub level: Level,
-    pub message: Message,
     pub subject: Subject,
     pub description: Description,
+    pub message: Message,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum Typo {
     #[default]
-    Level,
     Subject,
     Description,
+    Level,
+    Content,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -36,79 +37,101 @@ pub struct Pos {
 
 #[derive(Debug, PartialEq, Eq, Default)]
 pub enum Level {
+    Trace,
+    Debug,
     #[default]
     Info,
-    Debug,
-    Trace,
     Warn,
+    Error,
     Fatal,
 }
 
-impl Level {
-    fn variants(&self) -> Vec<&'static str> {
-        use Level::*;
-        match self {
-            Info => {
-                vec!["info:"]
-            }
-            Debug => {
-                vec!["debug:"]
-            }
-            Trace => {
-                vec!["trace:"]
-            }
-            Warn => {
-                vec!["warn:"]
-            }
-            Fatal => {
-                vec!["fatal:"]
-            }
-        }
-    }
-}
+// impl Level {
+//     fn variants(&self) -> Vec<&'static str> {
+//         use Level::*;
+//         match self {
+//             Trace => {
+//                 vec!["trace:"]
+//             }
+//             Debug => {
+//                 vec!["debug:"]
+//             }
+//             Info => {
+//                 vec!["info:"]
+//             }
+//             Warn => {
+//                 vec!["warn:"]
+//             }
+//             Error => {
+//                 vec!["error:"]
+//             }
+//             Fatal => {
+//                 vec!["fatal:"]
+//             }
+//         }
+//     }
+// }
 
 impl Display for Level {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let st = match self {
-            Level::Info => "info",
-            Level::Debug => "debug",
             Level::Trace => "trace",
+            Level::Debug => "debug",
+            Level::Info => "info",
             Level::Warn => "warn",
+            Level::Error => "error",
             Level::Fatal => "fatal",
         };
         write!(f, "{}", st)
     }
 }
 
-impl<T> TryFrom<(&String, &T)> for Message
+impl<T> From<T> for Message
 where
-    T: Display,
+    T: AsRef<str>,
 {
-    type Error = &'static str;
-    fn try_from(value: (&String, &T)) -> Result<Self, Self::Error> {
-        let mut line = value.0.clone();
-        let level = Level::from((value.0, value.1));
-        if line
-            .to_lowercase()
-            .starts_with(format!("{}", value.1).as_str())
-        {
-            let l = format!("{}", value.1).len();
-            crop_letters(&mut line, l);
-            delete_spaces_dotes(&mut line);
-
-            let level_variants = level.variants();
-            for variant in level_variants {
-                if line.to_lowercase().starts_with(variant) {
-                    let len = variant.len();
-                    crop_letters(&mut line, len);
-                    delete_spaces_dotes(&mut line);
-                    return Ok(Message(line));
-                }
-            }
-        }
-        Err("unexpected")
+    fn from(value: T) -> Self {
+        // let news: String = String::from(value.as_ref().chars().filter(|&c| c != '"').collect());
+        Message(remove_quotes(value.as_ref()))
     }
 }
+
+fn remove_quotes(input: &str) -> String {
+    input
+        .chars()
+        .filter(|&c| c != '"') // Фильтруем все символы, исключая кавычки
+        .collect() // Собираем оставшиеся символы обратно в строку
+}
+
+// impl<T> TryFrom<(&String, &T)> for Message
+// where
+//     T: Display,
+// {
+//     type Error = &'static str;
+//     fn try_from(value: (&String, &T)) -> Result<Self, Self::Error> {
+//         let mut line = value.0.clone();
+//         let level = Level::from((value.0, value.1));
+//         if line
+//             .to_lowercase()
+//             .starts_with(format!("{}", value.1).as_str())
+//         {
+//             let l = format!("{}", value.1).len();
+//             crop_letters(&mut line, l);
+//             delete_spaces_dotes(&mut line);
+
+//             let level_variants = level.variants();
+//             for variant in level_variants {
+//                 if line.to_lowercase().starts_with(variant) {
+//                     let len = variant.len();
+//                     crop_letters(&mut line, len);
+//                     delete_spaces_dotes(&mut line);
+//                     return Ok(Message(line));
+//                 }
+//             }
+//         }
+//         Err("unexpected")
+//     }
+// }
 
 impl Message {
     pub fn format(&self) -> String {
@@ -190,17 +213,17 @@ fn delete_spaces(line: &mut String) {
         }
     }
 }
-fn delete_spaces_dotes(line: &mut String) {
-    loop {
-        if line.starts_with(" ") {
-            crop_letters(line, 1);
-        } else if line.starts_with(":") {
-            crop_letters(line, 1);
-        } else {
-            break;
-        }
-    }
-}
+// fn delete_spaces_dotes(line: &mut String) {
+//     loop {
+//         if line.starts_with(" ") {
+//             crop_letters(line, 1);
+//         } else if line.starts_with(":") {
+//             crop_letters(line, 1);
+//         } else {
+//             break;
+//         }
+//     }
+// }
 
 fn crop_letters(s: &mut String, pos: usize) {
     match s.char_indices().nth(pos) {
@@ -265,9 +288,10 @@ where
 impl From<u32> for Typo {
     fn from(value: u32) -> Self {
         match value {
-            0 => Typo::Level,
-            1 => Typo::Subject,
-            2 => Typo::Description,
+            0 => Typo::Subject,
+            1 => Typo::Description,
+            2 => Typo::Level,
+            3 => Typo::Content,
             _ => Typo::default(),
         }
     }
@@ -318,108 +342,108 @@ impl files::WalkInPosition for Pos {
 
 #[cfg(test)]
 mod tests {
-    use crate::language::Comment;
+    // use crate::language::Comment;
 
-    use super::*;
+    // use super::*;
 
-    #[test]
-    fn check_level_from_string() {
-        let comments = vec![Comment::Slash, Comment::Dash];
-        let variants: Vec<(Level, Vec<&'static str>)> = vec![
-            (Level::Info, Level::Info.variants()),
-            (Level::Debug, Level::Debug.variants()),
-            (Level::Trace, Level::Trace.variants()),
-            (Level::Warn, Level::Warn.variants()),
-            (Level::Fatal, Level::Fatal.variants()),
-        ];
-        for (l, vs) in variants {
-            for comment in &comments {
-                for v in &vs {
-                    let st = format!("{} {} message", comment, v);
-                    let cur_level = Level::from((&st, &comment));
-                    assert_eq!(l, cur_level);
-                }
-            }
-        }
-    }
+    // #[test]
+    // fn check_level_from_string() {
+    //     let comments = vec![Comment::Slash, Comment::Dash];
+    //     let variants: Vec<(Level, Vec<&'static str>)> = vec![
+    //         (Level::Info, Level::Info.variants()),
+    //         (Level::Debug, Level::Debug.variants()),
+    //         (Level::Trace, Level::Trace.variants()),
+    //         (Level::Warn, Level::Warn.variants()),
+    //         (Level::Fatal, Level::Fatal.variants()),
+    //     ];
+    //     for (l, vs) in variants {
+    //         for comment in &comments {
+    //             for v in &vs {
+    //                 let st = format!("{} {} message", comment, v);
+    //                 let cur_level = Level::from((&st, &comment));
+    //                 assert_eq!(l, cur_level);
+    //             }
+    //         }
+    //     }
+    // }
 
-    #[test]
-    fn check_from() {
-        let comments = Comment::variants();
-        let variants: Vec<&'static str> = vec![
-            Level::Info.variants(),
-            Level::Debug.variants(),
-            Level::Trace.variants(),
-            Level::Warn.variants(),
-            Level::Fatal.variants(),
-        ]
-        .into_iter()
-        .flatten()
-        .collect();
+    // #[test]
+    // fn check_from() {
+    //     let comments = Comment::variants();
+    //     let variants: Vec<&'static str> = vec![
+    //         Level::Info.variants(),
+    //         Level::Debug.variants(),
+    //         Level::Trace.variants(),
+    //         Level::Warn.variants(),
+    //         Level::Fatal.variants(),
+    //     ]
+    //     .into_iter()
+    //     .flatten()
+    //     .collect();
 
-        let relevant_str = "test message";
-        let relevant_message = Message(String::from(relevant_str));
-        let relevant_subject = Subject(String::from(relevant_str));
-        let relevant_desc = Description(String::from(relevant_str));
+    //     let relevant_str = "test message";
+    //     let relevant_message = Message(String::from(relevant_str));
+    //     let relevant_subject = Subject(String::from(relevant_str));
+    //     let relevant_desc = Description(String::from(relevant_str));
 
-        for variant in variants {
-            for comment in &comments {
-                let s = format!("{} {} {}", comment, variant, relevant_str);
-                let m = Message::try_from((&s, &comment)).unwrap();
-                assert_eq!(relevant_message, m);
-            }
-        }
-        for comment in &comments {
-            let txt = format!("{} {}", comment, relevant_str);
-            let s = Subject::from((&txt, &comment));
-            let d = Description::from((&txt, &comment));
-            assert_eq!(relevant_subject, s);
-            assert_eq!(relevant_desc, d);
-        }
-    }
+    //     for variant in variants {
+    //         for comment in &comments {
+    //             let s = format!("{} {} {}", comment, variant, relevant_str);
+    //             let m = Message::try_from((&s, &comment)).unwrap();
+    //             assert_eq!(relevant_message, m);
+    //         }
+    //     }
+    //     for comment in &comments {
+    //         let txt = format!("{} {}", comment, relevant_str);
+    //         let s = Subject::from((&txt, &comment));
+    //         let d = Description::from((&txt, &comment));
+    //         assert_eq!(relevant_subject, s);
+    //         assert_eq!(relevant_desc, d);
+    //     }
+    // }
 
-    #[test]
-    fn check_message_from_string() {
-        let relevant = "test Message";
-        let msgrelevant = Message(relevant.to_owned());
+    // #[test]
+    // fn check_message_from_string() {
+    //     let relevant = "test Message";
+    //     let msgrelevant = Message(relevant.to_owned());
 
-        {
-            let i1 = format!("// info: {}", relevant);
-            let m1 = Message::try_from((&i1, &Comment::Slash)).unwrap();
-            assert_eq!(msgrelevant, m1);
-        }
-        {
-            let d1 = format!("//debug: {}", relevant);
-            let d2 = format!("// Debug: {}", relevant);
-            let m1 = Message::try_from((&d1, &Comment::Slash)).unwrap();
-            let m2 = Message::try_from((&d2, &Comment::Slash)).unwrap();
-            assert_eq!(msgrelevant, m1);
-            assert_eq!(msgrelevant, m2);
-        }
-        {
-            let t2 = format!("//trace: {}", relevant);
-            let m2 = Message::try_from((&t2, &Comment::Slash)).unwrap();
-            assert_eq!(msgrelevant, m2);
-        }
-        {
-            let w2 = format!("//warn:{}", relevant);
-            let m2 = Message::try_from((&w2, &Comment::Slash)).unwrap();
-            assert_eq!(msgrelevant, m2);
-        }
-        {
-            let w1 = format!("# TRACE: {}", relevant);
-            let m1 = Message::try_from((&w1, &Comment::Dash)).unwrap();
-            assert_eq!(msgrelevant, m1);
-        }
-        {
-            let f1 = format!("# FATAL: {}", relevant);
-            let m1 = Message::try_from((&f1, &Comment::Dash)).unwrap();
-            assert_eq!(msgrelevant, m1);
-        }
-        {
-            let e1 = format!("# info : {}", relevant);
-            let m = Message::try_from((&e1, &Comment::Dash));
-            assert_eq!(Err("unexpected"), m);
-        }
-    }
+    //     {
+    //         let i1 = format!("// info: {}", relevant);
+    //         let m1 = Message::try_from((&i1, &Comment::Slash)).unwrap();
+    //         assert_eq!(msgrelevant, m1);
+    //     }
+    //     {
+    //         let d1 = format!("//debug: {}", relevant);
+    //         let d2 = format!("// Debug: {}", relevant);
+    //         let m1 = Message::try_from((&d1, &Comment::Slash)).unwrap();
+    //         let m2 = Message::try_from((&d2, &Comment::Slash)).unwrap();
+    //         assert_eq!(msgrelevant, m1);
+    //         assert_eq!(msgrelevant, m2);
+    //     }
+    //     {
+    //         let t2 = format!("//trace: {}", relevant);
+    //         let m2 = Message::try_from((&t2, &Comment::Slash)).unwrap();
+    //         assert_eq!(msgrelevant, m2);
+    //     }
+    //     {
+    //         let w2 = format!("//warn:{}", relevant);
+    //         let m2 = Message::try_from((&w2, &Comment::Slash)).unwrap();
+    //         assert_eq!(msgrelevant, m2);
+    //     }
+    //     {
+    //         let w1 = format!("# TRACE: {}", relevant);
+    //         let m1 = Message::try_from((&w1, &Comment::Dash)).unwrap();
+    //         assert_eq!(msgrelevant, m1);
+    //     }
+    //     {
+    //         let f1 = format!("# FATAL: {}", relevant);
+    //         let m1 = Message::try_from((&f1, &Comment::Dash)).unwrap();
+    //         assert_eq!(msgrelevant, m1);
+    //     }
+    //     {
+    //         let e1 = format!("# info : {}", relevant);
+    //         let m = Message::try_from((&e1, &Comment::Dash));
+    //         assert_eq!(Err("unexpected"), m);
+    //     }
+    // }
 }

@@ -55,6 +55,11 @@ pub struct Arg {
     #[clap(env = "WARN_DESC")]
     pub warn_desc: Option<String>,
 
+    /// Description for Error log
+    #[arg(long)]
+    #[clap(env = "ERROR_DESC")]
+    pub error_desc: Option<String>,
+
     /// Description for Fatal log
     #[arg(long)]
     #[clap(env = "FATAL_DESC")]

@@ -101,19 +101,42 @@ impl Language {
     }
 }
 
+// fn query_go() -> &'static str {
+//     r#"(
+// 	(
+//     	(
+//     		(comment) @severity
+//     	)
+//         (#match? @severity "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Tt][Rr][Aa][Cc][Ee]|[Ww][Aa][Rr][Nn]|[Ff][Aa][Tt][Aa][Ll]):")
+//     )
+//    	.
+//     (comment) @subject
+//     .
+//     (comment)*? @description
+//     )"#
+// }
 fn query_go() -> &'static str {
     r#"(
-	(
-    	(
-    		(comment) @severity
-    	)
-        (#match? @severity "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Tt][Rr][Aa][Cc][Ee]|[Ww][Aa][Rr][Nn]|[Ff][Aa][Tt][Aa][Ll]):")
-    )
-   	.
-    (comment) @subject
-    .
-    (comment)*? @description
-    )"#
+         (comment) @subject
+         .
+         (comment)*? @description
+         .
+         (expression_statement 
+           (call_expression
+             (selector_expression
+               (field_identifier) @level
+               (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Tt][Rr][Aa][Cc][Ee]*|[Ff][Aa][Tt][Aa][Ll]*)")
+             )
+             (argument_list
+               ( 
+                 (interpreted_string_literal)*
+                 .
+                 (raw_string_literal)*
+               ) @message
+             )
+           )
+         )
+       )"#
 }
 
 fn query_rust() -> &'static str {
