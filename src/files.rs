@@ -83,21 +83,22 @@ where
     T: AsRef<[u8]>,
     W: WalkInPosition,
 {
-    let mut lines: Vec<Vec<u8>> = vec![];
-    let mut local_line: Vec<u8> = vec![];
-    for byte in data.as_ref() {
-        local_line.push(byte.clone());
-        if byte.eq(&10) {
-            lines.push(local_line.clone());
-            local_line.clear();
-            continue;
-        }
-    }
+    // let mut lines: Vec<Vec<u8>> = vec![];
+    // let mut local_line: Vec<u8> = vec![];
+    // for byte in data.as_ref() {
+    //     local_line.push(byte.clone());
+    //     if byte.eq(&10) {
+    //         lines.push(local_line.clone());
+    //         local_line.clear();
+    //         continue;
+    //     }
+    // }
+    let lines = data.as_ref().split(|&byte| byte == b'\n');
     let mut ret = vec![];
-    for (line_num, line) in lines.iter().enumerate() {
+    for (line_num, line) in lines.clone().enumerate() {
         if line_num.ge(&pos.line_start()) && line_num.le(&pos.line_end()) {
             for (char_num, char) in line.iter().enumerate() {
-                if char_num.ge(&pos.pos_start()) && char_num.le(&pos.pos_end()) {
+                if char_num.ge(&pos.pos_start()) && char_num.le(&(pos.pos_end() - 1)) {
                     ret.push(*char);
                 }
             }
@@ -106,53 +107,27 @@ where
     ret
 }
 
-pub fn write_to_file(meta: Meta, arg: &args::Arg) -> Result<(), Box<dyn std::error::Error>> {
-    let save_path = form_file_name(&arg.save_path, arg, &meta.level);
+// pub fn write_to_file(meta: Meta, arg: &args::Arg) -> Result<(), Box<dyn std::error::Error>> {
+//     let save_path = form_file_name(&arg.save_path, arg, &meta.level);
 
-    let mut file = create_new(&save_path, &arg, &meta)?;
-    if arg.save_type == SaveType::MD {
-        write_description(&mut file, &arg, &meta)?;
-        write_markdown_table_header(&mut file, &arg)?;
-        write_markdown_data(&mut file, &meta)?;
-    }
+//     let mut file = create_new(&save_path, &arg, &meta)?;
+//     if arg.save_type == SaveType::MD {
+//         write_description(&mut file, &arg, &meta)?;
+//         write_markdown_table_header(&mut file, &arg)?;
+//         write_markdown_data(&mut file, &meta)?;
+//     }
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 fn form_file_name(dir: &String, arg: &args::Arg, level: &Level) -> String {
     let path = std::path::Path::new(dir);
-    return match level {
-        Level::Info => format!(
-            "{}.{}",
-            path.join("info").display().to_string(),
-            arg.file_suffix()
-        ),
-        Level::Debug => format!(
-            "{}.{}",
-            path.join("debug").display().to_string(),
-            arg.file_suffix()
-        ),
-        Level::Trace => format!(
-            "{}.{}",
-            path.join("trace").display().to_string(),
-            arg.file_suffix()
-        ),
-        Level::Warn => format!(
-            "{}.{}",
-            path.join("warn").display().to_string(),
-            arg.file_suffix()
-        ),
-        Level::Error => format!(
-            "{}.{}",
-            path.join("error").display().to_string(),
-            arg.file_suffix()
-        ),
-        Level::Fatal => format!(
-            "{}.{}",
-            path.join("fatal").display().to_string(),
-            arg.file_suffix()
-        ),
-    };
+    let file_suf = arg.file_suffix();
+    format!(
+        "{}.{}",
+        path.join(level.as_ref()).to_string_lossy(),
+        file_suf
+    )
 }
 
 pub fn save_string_to_file<T>(data: T, level: &Level, arg: &args::Arg) -> Result<(), Box<dyn Error>>
@@ -163,116 +138,118 @@ where
     let mut file = std::fs::OpenOptions::new()
         .create(true)
         .write(true)
+        .truncate(true)
+        .append(false)
         .open(&save_path)?;
     file.write(data.as_ref())?;
     Ok(())
 }
 
-fn create_new(
-    path: &String,
-    arg: &args::Arg,
-    meta: &Meta,
-) -> Result<std::fs::File, Box<dyn std::error::Error>> {
-    let project = arg.project_name.clone();
-    let mut file = std::fs::File::create(path)?;
-    file.write(format!("# {} - {} logs\n\n", project, meta.level).as_bytes())?;
-    Ok(file)
-}
+// fn create_new(
+//     path: &String,
+//     arg: &args::Arg,
+//     meta: &Meta,
+// ) -> Result<std::fs::File, Box<dyn std::error::Error>> {
+//     let project = arg.project_name.clone();
+//     let mut file = std::fs::File::create(path)?;
+//     file.write(format!("# {} - {} logs\n\n", project, meta.level).as_bytes())?;
+//     Ok(file)
+// }
 
-fn write_description(
-    mut file: &File,
-    arg: &args::Arg,
-    meta: &Meta,
-) -> Result<(), Box<dyn std::error::Error>> {
-    match meta.level {
-        Level::Info => {
-            if let Some(ref desc) = arg.info_desc {
-                if desc.len() > 1 {
-                    write_file_to_end(&mut file, desc)?;
-                }
-            }
-        }
-        Level::Debug => {
-            if let Some(ref desc) = arg.debug_desc {
-                if desc.len() > 1 {
-                    write_file_to_end(&mut file, desc)?;
-                }
-            }
-        }
-        Level::Trace => {
-            if let Some(ref desc) = arg.trace_desc {
-                if desc.len() > 1 {
-                    write_file_to_end(&mut file, desc)?;
-                }
-            }
-        }
-        Level::Warn => {
-            if let Some(ref desc) = arg.warn_desc {
-                if desc.len() > 1 {
-                    write_file_to_end(&mut file, desc)?;
-                }
-            }
-        }
-        Level::Error => {
-            if let Some(ref desc) = arg.error_desc {
-                if desc.len() > 1 {
-                    write_file_to_end(&mut file, desc)?;
-                }
-            }
-        }
-        Level::Fatal => {
-            if let Some(ref desc) = arg.fatal_desc {
-                if desc.len() > 1 {
-                    write_file_to_end(&mut file, desc)?;
-                }
-            }
-        }
-    }
+// fn write_description(
+//     mut file: &File,
+//     arg: &args::Arg,
+//     meta: &Meta,
+// ) -> Result<(), Box<dyn std::error::Error>> {
+//     match meta.level {
+//         Level::Info => {
+//             if let Some(ref desc) = arg.info_desc {
+//                 if desc.len() > 1 {
+//                     write_file_to_end(&mut file, desc)?;
+//                 }
+//             }
+//         }
+//         Level::Debug => {
+//             if let Some(ref desc) = arg.debug_desc {
+//                 if desc.len() > 1 {
+//                     write_file_to_end(&mut file, desc)?;
+//                 }
+//             }
+//         }
+//         Level::Trace => {
+//             if let Some(ref desc) = arg.trace_desc {
+//                 if desc.len() > 1 {
+//                     write_file_to_end(&mut file, desc)?;
+//                 }
+//             }
+//         }
+//         Level::Warn => {
+//             if let Some(ref desc) = arg.warn_desc {
+//                 if desc.len() > 1 {
+//                     write_file_to_end(&mut file, desc)?;
+//                 }
+//             }
+//         }
+//         Level::Error => {
+//             if let Some(ref desc) = arg.error_desc {
+//                 if desc.len() > 1 {
+//                     write_file_to_end(&mut file, desc)?;
+//                 }
+//             }
+//         }
+//         Level::Fatal => {
+//             if let Some(ref desc) = arg.fatal_desc {
+//                 if desc.len() > 1 {
+//                     write_file_to_end(&mut file, desc)?;
+//                 }
+//             }
+//         }
+//     }
 
-    Ok(())
-}
+//     Ok(())
+// }
 
-fn write_file_to_end(
-    mut file: &std::fs::File,
-    data: &String,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let data = format!("{data}\n\n");
-    file.write(data.as_bytes())?;
-    Ok(())
-}
+// fn write_file_to_end(
+//     mut file: &std::fs::File,
+//     data: &String,
+// ) -> Result<(), Box<dyn std::error::Error>> {
+//     let data = format!("{data}\n\n");
+//     file.write(data.as_bytes())?;
+//     Ok(())
+// }
 
-fn write_markdown_table_header(
-    mut file: &File,
-    arg: &args::Arg,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let mut msg_header = "error message";
-    let mut subject_header = "subject";
-    let mut description_header = "description";
-    if let Some(ref msg) = arg.message_table_header {
-        msg_header = msg;
-    }
-    if let Some(ref subj) = arg.subject_table_header {
-        subject_header = subj;
-    }
-    if let Some(ref desc) = arg.description_table_header {
-        description_header = desc;
-    }
-    let data = format!(
-        "|{}|{}|{}|\n|---|---|---|\n",
-        msg_header, subject_header, description_header
-    );
-    file.write(data.as_bytes())?;
-    Ok(())
-}
+// fn write_markdown_table_header(
+//     mut file: &File,
+//     arg: &args::Arg,
+// ) -> Result<(), Box<dyn std::error::Error>> {
+//     let mut msg_header = "error message";
+//     let mut subject_header = "subject";
+//     let mut description_header = "description";
+//     if let Some(ref msg) = arg.message_table_header {
+//         msg_header = msg;
+//     }
+//     if let Some(ref subj) = arg.subject_table_header {
+//         subject_header = subj;
+//     }
+//     if let Some(ref desc) = arg.description_table_header {
+//         description_header = desc;
+//     }
+//     let data = format!(
+//         "|{}|{}|{}|\n|---|---|---|\n",
+//         msg_header, subject_header, description_header
+//     );
+//     file.write(data.as_bytes())?;
+//     Ok(())
+// }
 
-fn write_markdown_data(mut file: &File, meta: &Meta) -> Result<(), Box<dyn std::error::Error>> {
-    let message = meta.message.format();
-    let subject = meta.subject.format();
-    let description = meta.description.format();
-    let data = format!("|{}|{}|{}|\n", message, subject, description);
-    file.write(data.as_bytes())?;
-    Ok(())
-}
+// fn write_markdown_data(mut file: &File, meta: &Meta) -> Result<(), Box<dyn std::error::Error>> {
+//     let message = meta.message.format();
+//     let subject = meta.comments.format_subject();
+//     let description = meta.comments.format_description();
+//     let data = format!("|{}|{}|{}|\n", message, subject, description);
+//     file.write(data.as_bytes())?;
+//     Ok(())
+// }
 
 #[cfg(test)]
 mod tests {
@@ -282,15 +259,24 @@ mod tests {
     fn test_walk_file_dyn() {
         let data = r#"Hello,
 December is a last month in the year
- When January comes
+Best month in year is "February"
 All gifts are gone
 "#;
         let pos = Pos {
             typo: crate::meta::Typo::Level,
-            start: (2, 1),
-            end: (2, 4),
+            start: (1, 19),
+            end: (1, 24),
         };
         let result = search_in_file_dyn(data.as_bytes(), &pos);
-        assert_eq!(vec![87u8, 104, 101, 110], result);
+        assert_eq!("month", unsafe { String::from_utf8_unchecked(result) });
+
+        let pos = Pos {
+            typo: crate::meta::Typo::Content,
+            start: (2, 23),
+            end: (2, 31),
+        };
+
+        let result = search_in_file_dyn(data.as_bytes(), &pos);
+        assert_eq!("February", unsafe { String::from_utf8_unchecked(result) });
     }
 }

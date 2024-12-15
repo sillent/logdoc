@@ -2,13 +2,7 @@ use clap::Parser;
 
 use crate::args;
 use crate::files;
-use crate::meta::Description;
-use crate::meta::Level;
-use crate::meta::Message;
-use crate::meta::Meta;
-use crate::meta::Pos;
-use crate::meta::Subject;
-use crate::meta::Typo;
+use crate::meta::{Level, Message, Meta, Pos, Typo};
 use crate::template::render;
 use crate::template::TemplateData;
 
@@ -28,26 +22,19 @@ impl Application {
         let query = tree_sitter::Query::new(&lang.sitter_language(), &lang.query())?;
         let language_comment = lang.comment();
 
-        let mut template_data_info =
-            TemplateData::new(&arg.project_name, Level::Info, &arg.info_desc);
+        let mut template_data_info = TemplateData::new(&arg, Level::Info);
 
-        let mut template_data_debug =
-            TemplateData::new(&arg.project_name, Level::Debug, &arg.debug_desc);
+        let mut template_data_debug = TemplateData::new(&arg, Level::Debug);
 
-        let mut template_data_trace =
-            TemplateData::new(&arg.project_name, Level::Trace, &arg.trace_desc);
+        let mut template_data_trace = TemplateData::new(&arg, Level::Trace);
 
-        let mut template_data_warn =
-            TemplateData::new(&arg.project_name, Level::Warn, &arg.warn_desc);
+        let mut template_data_warn = TemplateData::new(&arg, Level::Warn);
 
-        let mut template_data_error =
-            TemplateData::new(&arg.project_name, Level::Error, &arg.error_desc);
+        let mut template_data_error = TemplateData::new(&arg, Level::Error);
 
-        let mut template_data_fatal =
-            TemplateData::new(&arg.project_name, Level::Fatal, &arg.fatal_desc);
+        let mut template_data_fatal = TemplateData::new(&arg, Level::Fatal);
 
         for file in files {
-            println!("file = {:?}", file);
             let file_bytes = std::fs::read_to_string(file)?;
             let tree = parse
                 .parse(&file_bytes.as_bytes(), None)
@@ -55,53 +42,23 @@ impl Application {
             let mut query_cursor = tree_sitter::QueryCursor::new();
             let query_matches =
                 query_cursor.matches(&query, tree.root_node(), file_bytes.as_bytes());
-            // println!("number of matches = {:?}", query_matches);
+
             for query_match in query_matches {
-                // let mut id = 0;
                 let mut m = Meta::default();
                 for query_capture in query_match.captures {
-                    // if id > 0 {
-                    //     continue;
-                    // }
-                    // id += 1;
-                    // println!("query match = {:?}", query_match);
                     let position = Pos::from(query_capture);
                     let query_bytes = files::search_in_file_dyn(&file_bytes.as_bytes(), &position);
                     let data = String::from_utf8_lossy(&query_bytes).to_string();
-                    // match position.typo {
-                    //     Typo::Level => {
-                    //         let level = Level::from((&data, &language_comment));
-                    //         m.level = level;
-                    //         // println!("level = {:?}", m.level);
-                    //         // m.message = Message::try_from((&data, &language_comment))?;
-                    //     }
-                    //     Typo::Subject => {
-                    //         m.subject = Subject::from((&data, &language_comment));
-                    //         // println!("subject = {:?}", m.subject);
-                    //     }
-                    //     Typo::Description => {
-                    //         let desc = Description::from((&data, &language_comment));
-                    //         let v = vec![m.description.0.clone(), desc.0];
-                    //         let v = Description::from((&v.join("").to_string(), &language_comment));
-                    //         m.description = v;
-                    //         // println!("description = {:?}", m.description);
-                    //     }
-                    //     Typo::Content => m.message = Message::from(&data),
-                    // }
-                    // println!("message = {:?}", m.message);
                     if position.typo == Typo::Level {
                         let level = Level::from((&data, &language_comment));
                         m.level = level;
-                        // m.message = Message::try_from((&data, &language_comment))?;
                     }
-                    if position.typo == Typo::Subject {
-                        m.subject = Subject::from((&data, &language_comment));
-                    }
-                    if position.typo == Typo::Description {
-                        let desc = Description::from((&data, &language_comment));
-                        let v = vec![m.description.0.clone(), desc.0];
-                        let v = Description::from((&v.join("").to_string(), &language_comment));
-                        m.description = v;
+                    if position.typo == Typo::Comments {
+                        if m.comments.subject.is_empty() {
+                            m.comments.subject = language_comment.remove(&data);
+                        } else {
+                            m.comments.description.push(language_comment.remove(&data));
+                        }
                     }
                     if position.typo == Typo::Content {
                         m.message = Message::from(&data);

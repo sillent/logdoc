@@ -2,21 +2,28 @@ package main
 
 // glob omment
 func main() {
-	// Test log subj
-	// Test log descr 1
-	// test log descr 2
-	log.Info("test log")
-	// Test debug subj
-	// Test debug log descr 1
+	// Test info log - subject
+	// description 1
+	// description 2
+	log.Info("test info log")
+	// Test info log 2 - subject
+	// description 1
+	log.Info("test info log 2")
+	// just debug subject
+	// description 1
+	// description 2
+	// description 3
 	log.Debug("test debug log")
-	// Test debug too subj
+	// Test error log - subject
 	// this message is debug level
-	log.Debug("test debug too")
-	// this part is skipped
-	log.Info("skipped log")
-	// undefined behavior
-	// call admin
+	log.Error("test debug too")
+	// Test trace log - subject
+	log.Trace("skipped log")
+	// Test fatal log - subject
+	// Test fatal description
 	log.Fatal("just fatal log")
-	// only subject
-	log.Info("other info log")
+	// Test warn log - subject (only subject)
+	log.Warn("other info log")
+	// Log not supported
+	log.Other("error on process")
 }

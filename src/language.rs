@@ -22,6 +22,13 @@ impl Comment {
     pub fn variants() -> Vec<Self> {
         vec![Self::Dash, Self::Slash]
     }
+
+    pub fn remove(&self, text: &String) -> String {
+        match self {
+            Self::Dash => text.trim_start_matches('#').trim().to_string(),
+            Self::Slash => text.trim_start_matches('/').trim().to_string(),
+        }
+    }
 }
 impl From<&crate::args::Language> for Language {
     fn from(value: &crate::args::Language) -> Self {
@@ -69,7 +76,9 @@ impl Language {
     pub fn query(&self) -> &str {
         use Language::*;
         match self {
-            Golang => query_go(),
+            // Golang => query_go(),
+            Golang => query_go2(),
+            // Golang => query_go22(),
             Rust => query_rust(),
             C => query_c(),
             Cpp => query_cpp(),
@@ -115,6 +124,35 @@ impl Language {
 //     (comment)*? @description
 //     )"#
 // }
+
+fn query_go2() -> &'static str {
+    r#"
+    (
+  (comment)* @comment
+  .
+  (expression_statement 
+    (call_expression
+      (selector_expression
+        (field_identifier) @level
+        (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Ff][Aa][Tt][Aa][Ll]*|[Ee][Rr][Rr][Oo][Rr]*|[Tt][Rr][Aa][Cc]*)")
+      )
+      (argument_list
+        (
+         (interpreted_string_literal)*
+         .
+         (raw_string_literal)*
+        ) @content
+      )
+    )
+  )
+)
+    "#
+}
+
+fn query_go22() -> &'static str {
+    r#"
+    "#
+}
 fn query_go() -> &'static str {
     r#"(
          (comment) @subject
