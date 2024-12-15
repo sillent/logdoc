@@ -112,41 +112,43 @@ impl Language {
 
 fn query_go() -> &'static str {
     r#"
+(
+ (comment)+ @comment
+ .
+ (expression_statement
+  (call_expression
+   (selector_expression
+    (field_identifier) @level
+    (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Ff][Aa][Tt][Aa][Ll]*|[Ee][Rr][Rr][Oo][Rr]*|[Tt][Rr][Aa][Cc]*)")
+   )
+   (argument_list
     (
-  (comment)* @comment
-  .
-  (expression_statement 
-    (call_expression
-      (selector_expression
-        (field_identifier) @level
-        (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Ff][Aa][Tt][Aa][Ll]*|[Ee][Rr][Rr][Oo][Rr]*|[Tt][Rr][Aa][Cc]*)")
-      )
-      (argument_list
-        (
-         (interpreted_string_literal)*
-         .
-         (raw_string_literal)*
-        ) @content
-      )
+     (interpreted_string_literal)*
+     .
+     (raw_string_literal)*
+     ) @content
     )
+   )
   )
 )
     "#
 }
 
 fn query_rust() -> &'static str {
-    r#"(
-	(
-    	(
-    		(line_comment) @level
-    	)
-        (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll]):")
-    )
-   	.
-    (line_comment) @subject
-    .
-    (line_comment)*? @description
-    )"#
+    r#"
+(
+ (line_comment)+ @comment
+ .
+ (expression_statement
+  (macro_invocation
+   (identifier) @level
+   (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg])")
+   (token_tree
+     (string_literal) @content)
+  )
+ )
+)
+    "#
 }
 
 fn query_c() -> &'static str {
