@@ -142,7 +142,7 @@ fn query_rust() -> &'static str {
  (expression_statement
   (macro_invocation
    (identifier) @level
-   (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg])")
+   (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Ff][Aa][Tt][Aa][Ll]*|[Ee][Rr][Rr][Oo][Rr]*|[Tt][Rr][Aa][Cc]*)")
    (token_tree
      (string_literal) @content)
   )
