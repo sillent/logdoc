@@ -50,7 +50,7 @@ impl Application {
                     let query_bytes = files::search_in_file_dyn(&file_bytes.as_bytes(), &position);
                     let data = String::from_utf8_lossy(&query_bytes).to_string();
                     if position.typo == Typo::Level {
-                        let level = Level::from((&data, &language_comment));
+                        let level = Level::from(&data);
                         m.level = level;
                     }
                     if position.typo == Typo::Comments {

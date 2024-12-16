@@ -119,19 +119,16 @@ fn crop_letters(s: &mut String, pos: usize) {
     }
 }
 
-impl<T> From<(&String, &T)> for Level
-where
-    T: Display,
-{
-    fn from(value: (&String, &T)) -> Self {
-        let line = value.0.to_owned();
+impl From<&String> for Level {
+    fn from(value: &String) -> Self {
+        let line = value.clone().to_lowercase().trim().to_owned();
         match line {
-            line if line.to_lowercase().trim().starts_with("trace") => Level::Trace,
-            line if line.to_lowercase().trim().starts_with("debug") => Level::Debug,
-            line if line.to_lowercase().trim().starts_with("info") => Level::Info,
-            line if line.to_lowercase().trim().starts_with("warn") => Level::Warn,
-            line if line.to_lowercase().trim().starts_with("error") => Level::Error,
-            line if line.to_lowercase().trim().starts_with("fatal") => Level::Fatal,
+            line if line.contains("trace") => Level::Trace,
+            line if line.contains("debug") => Level::Debug,
+            line if line.contains("info") => Level::Info,
+            line if line.contains("warn") => Level::Warn,
+            line if line.contains("error") => Level::Error,
+            line if line.contains("fatal") => Level::Fatal,
             _ => Level::Info,
         }
     }
