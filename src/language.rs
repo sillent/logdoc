@@ -151,19 +151,38 @@ fn query_rust() -> &'static str {
     "#
 }
 
+// fn query_c() -> &'static str {
+//     r#"(
+// 	(
+//     	(
+//     		(comment) @level
+//     	)
+//         (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll]):")
+//     )
+//    	.
+//     (comment) @subject
+//     .
+//     (comment)*? @description
+//     )
+//     "#
+// }
+
 fn query_c() -> &'static str {
-    r#"(
-	(
-    	(
-    		(comment) @level
-    	)
-        (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll]):")
+    r#"
+(
+  (comment)+ @comment
+  .
+  (expression_statement 
+    (call_expression
+        (identifier) @level
+        (#match? @level "^(.*[Ii][Nn][Ff][Oo]*|.*[Dd][Ee][Bb][Uu][Gg]|.*[Ww][Aa][Rr][Nn]*|.*[Ff][Aa][Tt][Aa][Ll]*|.*[Ee][Rr][Rr][Oo][Rr]*|.*[Tt][Rr][Aa][Cc][Ee]*)")
+     (argument_list 
+       (string_literal) @content
+     )
     )
-   	.
-    (comment) @subject
-    .
-    (comment)*? @description
-    )"#
+  )
+)
+    "#
 }
 
 fn query_cpp() -> &'static str {
