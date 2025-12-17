@@ -1,4 +1,6 @@
 use clap::Parser;
+use env_logger;
+use log;
 
 use crate::args;
 use crate::files;
@@ -10,6 +12,7 @@ pub struct Application;
 
 impl Application {
     pub fn run() -> Result<(), Box<dyn std::error::Error>> {
+        env_logger::init();
         let arg = args::Arg::parse();
         let mut parse = tree_sitter::Parser::new();
         let lang = crate::language::Language::from(&arg.language);
@@ -35,6 +38,7 @@ impl Application {
         let mut template_data_fatal = TemplateData::new(&arg, Level::Fatal);
 
         for file in files {
+            log::debug!("processing {file:?}");
             let file_bytes = std::fs::read_to_string(file)?;
             let tree = parse
                 .parse(&file_bytes.as_bytes(), None)
@@ -44,6 +48,7 @@ impl Application {
                 query_cursor.matches(&query, tree.root_node(), file_bytes.as_bytes());
 
             for query_match in query_matches {
+                log::debug!("processing query match := {:?}", query_match);
                 let mut m = Meta::default();
                 for query_capture in query_match.captures {
                     let position = Pos::from(query_capture);
