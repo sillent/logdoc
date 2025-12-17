@@ -1,7 +1,16 @@
 def main
-  puts "hello"
+  # test info
+  # test subject 1
+  # test subject 2
+  logger.info("test")
+  # test debug
+  logger.debug("debug")
+  # test error
+  # test subject - message with argument
+  logger.error("error message", argument)
+  # this test not appear
+  logger.fiction("fiction")
 end
 
-# info: test comment
-# subject
-# description
+# outer log
+logger.warn("warning message")
