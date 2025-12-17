@@ -121,7 +121,7 @@ fn crop_letters(s: &mut String, pos: usize) {
 
 impl From<&String> for Level {
     fn from(value: &String) -> Self {
-        let line = value.clone().to_lowercase().trim().to_owned();
+        let line = value.to_lowercase().trim().to_owned();
         match line {
             line if line.contains("trace") => Level::Trace,
             line if line.contains("debug") => Level::Debug,
