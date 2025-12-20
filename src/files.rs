@@ -2,6 +2,7 @@ use std::{error::Error, fs::File, io::Write, path::Path};
 
 use crate::{
     args::{self, SaveType},
+    language::Language,
     meta::{Level, Meta},
 };
 
@@ -14,15 +15,20 @@ pub trait WalkInPosition {
 
 pub fn form_list_files(arg: &args::Arg) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let mut total = vec![];
+    let lang = Language::from(&arg.language);
     if let Some(files) = &arg.files {
-        for file in files {
-            if std::fs::metadata(&file)?.is_file() {
-                total.push(file.clone());
-            }
-        }
+        total.extend(
+            files
+                .iter()
+                .filter(|file| {
+                    file.ends_with(lang.file_ending())
+                        && std::fs::metadata(file).map_or(false, |m| m.is_file())
+                })
+                .cloned(),
+        );
     }
     let recurse = arg.recurse;
-    let mut files = list_files_in_dir(&arg.directories(), recurse)?;
+    let mut files = list_files_in_dir(&arg.directories(), recurse, &lang)?;
     total.append(&mut files);
 
     Ok(total)
@@ -30,21 +36,26 @@ pub fn form_list_files(arg: &args::Arg) -> Result<Vec<String>, Box<dyn std::erro
 fn list_files_in_dir<T>(
     dirs: &Vec<T>,
     recurse: bool,
+    language: &Language,
 ) -> Result<Vec<String>, Box<dyn std::error::Error>>
 where
     T: AsRef<Path>,
 {
-    let mut files_total = vec![];
-    for dir in dirs {
-        let mut files = walk_path(dir.as_ref(), recurse)?;
-        files_total.append(&mut files);
-    }
+    let files_total = dirs
+        .iter()
+        .map(|dir| walk_path(dir.as_ref(), recurse, language))
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .flatten()
+        .collect();
+
     Ok(files_total)
 }
 
 fn walk_path(
     path: &std::path::Path,
     recurse: bool,
+    language: &Language,
 ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let mut files = vec![];
     let entries = std::fs::read_dir(path)?;
@@ -53,18 +64,21 @@ fn walk_path(
         if is_hidden(&entry) {
             continue;
         }
-        if entry.file_type()?.is_symlink() {
+        let file_type = entry.file_type()?;
+        if file_type.is_symlink() {
             continue;
         }
-        if entry.file_type()?.is_dir() {
+        if file_type.is_dir() {
             if recurse {
-                let mut files_in_entry = walk_path(path.as_ref(), recurse)?;
-                files.append(&mut files_in_entry);
+                let mut inner = walk_path(&entry.path(), recurse, language)?;
+                files.append(&mut inner);
             }
             continue;
         }
         if let Ok(path) = entry.path().into_os_string().into_string() {
-            files.push(path);
+            if path.ends_with(language.file_ending()) {
+                files.push(path);
+            }
         }
     }
     Ok(files)
@@ -253,8 +267,14 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{files::search_in_file_dyn, meta::Pos};
+    use crate::{args, files::search_in_file_dyn, meta::Pos};
 
+    #[test]
+    fn test_form_list_files() {
+        let mut arg: args::Arg = Default::default();
+        arg.project_name = String::from("test");
+        arg.directories = Some(vec!["".to_owned()]);
+    }
     #[test]
     fn test_walk_file_dyn() {
         let data = r#"Hello,
