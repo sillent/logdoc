@@ -91,7 +91,8 @@ pub fn render(
     templ_data: TemplateData,
     save_type: &args::SaveType,
 ) -> Result<String, Box<dyn Error>> {
-    let handlebar_registry = Handlebars::new();
+    let mut handlebar_registry = Handlebars::new();
+    handlebar_registry.register_escape_fn(handlebars::no_escape);
     let templ_string = template(save_type);
     let result = handlebar_registry.render_template(&templ_string, &templ_data)?;
     Ok(result)
