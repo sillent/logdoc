@@ -1,11 +1,17 @@
+import "logger"
+# outer log
+# subject of outer log
+logger.info("outer log")
 def main:
-    # INFO: test message from python
+    # test message from python
     # just info message
     # nothing to do
-    print("test message from python")
-    # info second test message from python
+    logger.info("info test message")
+    # debug second test message from python
     # also just info message
-    print("second test message from python")
-    # FATAL: fatal message from python
+    logger.warn("warn test message from python")
+    # trace message from python
     # emergency, do something
-    fatal("fatal message from python")
+    logger.trace("trace message from python")
+    # fatal log
+    logger.fatal("fatal message")

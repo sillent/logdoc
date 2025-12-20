@@ -1,6 +1,8 @@
 use clap::Parser;
 
-#[derive(Debug, Parser, Clone)]
+use crate::language;
+
+#[derive(Debug, Parser, Clone, Default)]
 #[command(name = "LogDoc")]
 #[command(version, about="Create .MD files with information about logs", long_about=None)]
 pub struct Arg {
@@ -16,6 +18,11 @@ pub struct Arg {
     #[arg(short)]
     pub recurse: bool,
 
+    /// New line parse separator used in description column
+    #[arg(long)]
+    #[clap(default_value = ".")]
+    pub new_line_separator: String,
+
     /// Additionaly passed files
     #[arg(short, long)]
     pub files: Option<Vec<String>>,
@@ -23,7 +30,7 @@ pub struct Arg {
     /// Specify language that should be proceeded
     #[arg(short, long)]
     #[clap(value_parser)]
-    pub language: Language,
+    pub language: language::Language,
 
     /// Specify directory when data should be saved
     #[arg(short, long)]
@@ -55,37 +62,30 @@ pub struct Arg {
     #[clap(env = "WARN_DESC")]
     pub warn_desc: Option<String>,
 
+    /// Description for Error log
+    #[arg(long)]
+    #[clap(env = "ERROR_DESC")]
+    pub error_desc: Option<String>,
+
     /// Description for Fatal log
     #[arg(long)]
     #[clap(env = "FATAL_DESC")]
     pub fatal_desc: Option<String>,
 
     /// MarkDown Message table header
-    #[arg(long = "message_table_header")]
+    #[arg(long = "message-table-header")]
     #[clap(env = "MESSAGE_TABLE_HEADER")]
     pub message_table_header: Option<String>,
 
     /// MarkDown Subject table header
-    #[arg(long = "subject_table_header")]
+    #[arg(long = "subject-table-header")]
     #[clap(env = "SUBJECT_TABLE_HEADER")]
     pub subject_table_header: Option<String>,
 
     /// Markdown Description table header
-    #[arg(long = "description_table_header")]
+    #[arg(long = "description-table-header")]
     #[clap(env = "DESCRIPTION_TABLE_HEADER")]
     pub description_table_header: Option<String>,
-}
-
-#[derive(Debug, Parser, clap::ValueEnum, Clone)]
-pub enum Language {
-    Golang,
-    C,
-    Cpp,
-    Python,
-    Java,
-    JavaScript,
-    Ruby,
-    Rust,
 }
 
 #[derive(Debug, Parser, clap::ValueEnum, Default, Clone, PartialEq, Eq)]
@@ -93,22 +93,6 @@ pub enum SaveType {
     #[default]
     MD,
     CSV,
-}
-
-impl ToString for Language {
-    fn to_string(&self) -> String {
-        use Language::*;
-        match self {
-            Golang => "golang".to_owned(),
-            C => "c".to_owned(),
-            Cpp => "cpp".to_owned(),
-            Python => "python".to_owned(),
-            Java => "java".to_owned(),
-            JavaScript => "javascript".to_owned(),
-            Ruby => "ruby".to_owned(),
-            Rust => "rust".to_owned(),
-        }
-    }
 }
 
 impl ToString for SaveType {
@@ -137,10 +121,10 @@ impl Arg {
         }
         return vec![];
     }
-    pub fn file_suffix(&self) -> String {
+    pub fn file_suffix(&self) -> &'static str {
         match self.save_type {
-            SaveType::MD => "md".to_owned(),
-            SaveType::CSV => "csv".to_owned(),
+            SaveType::MD => "md",
+            SaveType::CSV => "csv",
         }
     }
 }
