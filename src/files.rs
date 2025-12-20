@@ -15,7 +15,7 @@ pub trait WalkInPosition {
 
 pub fn form_list_files(arg: &args::Arg) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let mut total = vec![];
-    let lang = Language::from(&arg.language);
+    let lang = &arg.language;
     if let Some(files) = &arg.files {
         total.extend(
             files

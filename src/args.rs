@@ -1,5 +1,7 @@
 use clap::Parser;
 
+use crate::language;
+
 #[derive(Debug, Parser, Clone, Default)]
 #[command(name = "LogDoc")]
 #[command(version, about="Create .MD files with information about logs", long_about=None)]
@@ -28,7 +30,7 @@ pub struct Arg {
     /// Specify language that should be proceeded
     #[arg(short, long)]
     #[clap(value_parser)]
-    pub language: Language,
+    pub language: language::Language,
 
     /// Specify directory when data should be saved
     #[arg(short, long)]
@@ -86,40 +88,11 @@ pub struct Arg {
     pub description_table_header: Option<String>,
 }
 
-#[derive(Debug, Parser, clap::ValueEnum, Clone, Default)]
-pub enum Language {
-    Golang,
-    C,
-    Cpp,
-    Python,
-    Java,
-    JavaScript,
-    Ruby,
-    #[default]
-    Rust,
-}
-
 #[derive(Debug, Parser, clap::ValueEnum, Default, Clone, PartialEq, Eq)]
 pub enum SaveType {
     #[default]
     MD,
     CSV,
-}
-
-impl ToString for Language {
-    fn to_string(&self) -> String {
-        use Language::*;
-        match self {
-            Golang => "golang".to_owned(),
-            C => "c".to_owned(),
-            Cpp => "cpp".to_owned(),
-            Python => "python".to_owned(),
-            Java => "java".to_owned(),
-            JavaScript => "javascript".to_owned(),
-            Ruby => "ruby".to_owned(),
-            Rust => "rust".to_owned(),
-        }
-    }
 }
 
 impl ToString for SaveType {

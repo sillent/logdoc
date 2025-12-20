@@ -15,7 +15,7 @@ impl Application {
         env_logger::init();
         let arg = args::Arg::parse();
         let mut parse = tree_sitter::Parser::new();
-        let lang = crate::language::Language::from(&arg.language);
+        let lang = &arg.language;
         parse.set_language(&lang.sitter_language()).or(Err(format!(
             "Failed to load {} tree-sitter language",
             &lang

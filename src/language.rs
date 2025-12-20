@@ -1,8 +1,9 @@
+use clap::Parser;
 use std::fmt::Display;
 
 use crate::queries;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Parser, clap::ValueEnum, Default)]
 pub enum Language {
     Golang,
     C,
@@ -11,6 +12,7 @@ pub enum Language {
     Java,
     JavaScript,
     Ruby,
+    #[default]
     Rust,
 }
 
@@ -29,21 +31,6 @@ impl Comment {
         match self {
             Self::Dash => text.trim_start_matches('#').trim().to_string(),
             Self::Slash => text.trim_start_matches('/').trim().to_string(),
-        }
-    }
-}
-impl From<&crate::args::Language> for Language {
-    fn from(value: &crate::args::Language) -> Self {
-        use crate::args;
-        match value {
-            args::Language::Golang => Self::Golang,
-            args::Language::C => Self::C,
-            args::Language::Cpp => Self::Cpp,
-            args::Language::Python => Self::Python,
-            args::Language::Java => Self::Java,
-            args::Language::JavaScript => Self::JavaScript,
-            args::Language::Ruby => Self::Ruby,
-            args::Language::Rust => Self::Rust,
         }
     }
 }
