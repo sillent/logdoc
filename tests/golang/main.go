@@ -1,14 +1,20 @@
 package main
 
+import (
+	"github.com/sirupsen/logrus"
+)
+
 // glob omment
 func main() {
+	log := logrus.WithField("log", "log")
 	// Test info log - subject
 	// description 1
 	// description 2
 	log.Info("test info log")
 	// Test info log 2 - subject
 	// description 1
-	log.Info("test info log 2")
+	log.WithField("test", "test").
+		Info("test info log 2")
 	// just debug subject
 	// description 1
 	// description 2
@@ -26,4 +32,5 @@ func main() {
 	log.Warn("other info log")
 	// Log not supported
 	log.Other("error on process")
+	log.Info("log without subject/description - not processed")
 }
