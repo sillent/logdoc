@@ -66,7 +66,7 @@ impl Language {
         use Language::*;
         match self {
             Golang => queries::QUERY_GOLANG,
-            Rust => query_rust(),
+            Rust => queries::QUERY_RUST,
             C => query_c(),
             Cpp => query_cpp(),
             Ruby => query_ruby(),

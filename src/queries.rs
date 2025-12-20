@@ -19,6 +19,20 @@ pub const QUERY_GOLANG: &'static str = r#"
   )
 )
 "#;
+pub const QUERY_RUST: &'static str = r#"
+(
+ (line_comment)+ @comment
+ .
+ (expression_statement
+  (macro_invocation
+   (identifier) @level
+   (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Ff][Aa][Tt][Aa][Ll]*|[Ee][Rr][Rr][Oo][Rr]*|[Tt][Rr][Aa][Cc][Ee]*)")
+   (token_tree
+     (string_literal) @content)
+  )
+ )
+)
+"#;
 pub const QUERY: &'static str = r#"(
     (comment) @comment1
     (comment) @comment2
