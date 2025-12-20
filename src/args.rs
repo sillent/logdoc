@@ -1,6 +1,6 @@
 use clap::Parser;
 
-#[derive(Debug, Parser, Clone)]
+#[derive(Debug, Parser, Clone, Default)]
 #[command(name = "LogDoc")]
 #[command(version, about="Create .MD files with information about logs", long_about=None)]
 pub struct Arg {
@@ -86,7 +86,7 @@ pub struct Arg {
     pub description_table_header: Option<String>,
 }
 
-#[derive(Debug, Parser, clap::ValueEnum, Clone)]
+#[derive(Debug, Parser, clap::ValueEnum, Clone, Default)]
 pub enum Language {
     Golang,
     C,
@@ -95,6 +95,7 @@ pub enum Language {
     Java,
     JavaScript,
     Ruby,
+    #[default]
     Rust,
 }
 
