@@ -1,9 +1,9 @@
-use std::{error::Error, fs::File, io::Write, path::Path};
+use std::{error::Error, io::Write, path::Path};
 
 use crate::{
-    args::{self, SaveType},
+    args::{self},
     language::Language,
-    meta::{Level, Meta},
+    meta::Level,
 };
 
 pub trait WalkInPosition {
