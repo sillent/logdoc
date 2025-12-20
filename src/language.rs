@@ -121,6 +121,19 @@ impl Language {
             Python | Ruby => Comment::Dash,
         }
     }
+    pub fn file_ending(&self) -> &'static str {
+        use Language::*;
+        match self {
+            Rust => ".rs",
+            C => ".c",
+            Cpp => ".cpp",
+            Java => ".java",
+            JavaScript => ".js",
+            Python => ".py",
+            Golang => ".go",
+            Ruby => ".rb",
+        }
+    }
 }
 
 fn query_go() -> &'static str {
