@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use clap::Parser;
 use env_logger;
-use log::debug;
+use log;
 
 use crate::args;
 use crate::files;
@@ -73,7 +73,7 @@ impl Application {
         }
         for (level, data) in templates {
             if data.is_empty() {
-                debug!("skippking {:?}, no metadata found", level);
+                log::info!("skippking {:?}, no metadata found", level);
                 continue;
             }
             let rendered = render(data, &arg.save_type)?;
