@@ -33,7 +33,7 @@ pub struct Pos {
     pub end: (u32, u32),
 }
 
-#[derive(Debug, PartialEq, Eq, Default)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, Default)]
 pub enum Level {
     Trace,
     Debug,
@@ -44,6 +44,16 @@ pub enum Level {
     Fatal,
 }
 
+impl Level {
+    pub const ALL: [Level; 6] = [
+        Level::Trace,
+        Level::Debug,
+        Level::Info,
+        Level::Warn,
+        Level::Error,
+        Level::Fatal,
+    ];
+}
 impl Display for Level {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let st = self.as_ref();
