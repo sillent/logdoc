@@ -31,17 +31,6 @@ impl Application {
             .iter()
             .map(|&lvl| (lvl, TemplateData::new(&arg, lvl)))
             .collect();
-        let mut template_data_info = TemplateData::new(&arg, Level::Info);
-
-        let mut template_data_debug = TemplateData::new(&arg, Level::Debug);
-
-        let mut template_data_trace = TemplateData::new(&arg, Level::Trace);
-
-        let mut template_data_warn = TemplateData::new(&arg, Level::Warn);
-
-        let mut template_data_error = TemplateData::new(&arg, Level::Error);
-
-        let mut template_data_fatal = TemplateData::new(&arg, Level::Fatal);
 
         for file in files {
             log::debug!("processing {file:?}");
@@ -76,14 +65,7 @@ impl Application {
                     }
                 }
                 let tmeta = crate::template::TemplateMeta::from(&m);
-                // match m.level {
-                //     Level::Trace => template_data_trace.add_meta(tmeta),
-                //     Level::Debug => template_data_debug.add_meta(tmeta),
-                //     Level::Info => template_data_info.add_meta(tmeta),
-                //     Level::Warn => template_data_warn.add_meta(tmeta),
-                //     Level::Error => template_data_error.add_meta(tmeta),
-                //     Level::Fatal => template_data_fatal.add_meta(tmeta),
-                // }
+
                 if let Some(tpl) = templates.get_mut(&m.level) {
                     tpl.add_meta(tmeta);
                 }
@@ -97,18 +79,6 @@ impl Application {
             let rendered = render(data, &arg.save_type)?;
             files::save_string_to_file(rendered, &level, &arg)?;
         }
-        // let template_str_trace = render(template_data_trace, &arg.save_type)?;
-        // let template_str_debug = render(template_data_debug, &arg.save_type)?;
-        // let template_str_info = render(template_data_info, &arg.save_type)?;
-        // let template_str_warn = render(template_data_warn, &arg.save_type)?;
-        // let template_str_error = render(template_data_error, &arg.save_type)?;
-        // let template_str_fatal = render(template_data_fatal, &arg.save_type)?;
-        // files::save_string_to_file(template_str_trace, &Level::Trace, &arg)?;
-        // files::save_string_to_file(template_str_debug, &Level::Debug, &arg)?;
-        // files::save_string_to_file(template_str_info, &Level::Info, &arg)?;
-        // files::save_string_to_file(template_str_warn, &Level::Warn, &arg)?;
-        // files::save_string_to_file(template_str_error, &Level::Error, &arg)?;
-        // files::save_string_to_file(template_str_fatal, &Level::Fatal, &arg)?;
 
         Ok(())
     }
