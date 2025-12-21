@@ -1,21 +1,23 @@
 pub const QUERY_GOLANG: &'static str = r#"
 (
- (comment)+ @comment
- .
- (expression_statement
-  (call_expression
-   (selector_expression
-    (field_identifier) @level
-    (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Ff][Aa][Tt][Aa][Ll]*|[Ee][Rr][Rr][Oo][Rr]*|[Tt][Rr][Aa][Cc]*)")
-   )
-   (argument_list
-    (
-     (interpreted_string_literal)*
-     .
-     (raw_string_literal)*
-     ) @content
+  (comment)+ @comment
+  .
+  (expression_statement
+    (call_expression
+      (selector_expression
+        (field_identifier) @level
+        (#match? @level
+          "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Ff][Aa][Tt][Aa][Ll]*|[Ee][Rr][Rr][Oo][Rr]*|[Tt][Rr][Aa][Cc][Ee]*)$")
+      )
+      (argument_list
+        (
+          [
+            (interpreted_string_literal)
+            (raw_string_literal)
+          ]+
+        ) @content
+      )
     )
-   )
   )
 )
 "#;
