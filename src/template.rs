@@ -61,6 +61,9 @@ impl TemplateData {
         }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.metas.is_empty()
+    }
     pub fn add_meta(&mut self, tm: TemplateMeta) {
         self.metas.push(tm);
     }
