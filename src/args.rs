@@ -86,6 +86,10 @@ pub struct Arg {
     #[arg(long = "description-table-header")]
     #[clap(env = "DESCRIPTION_TABLE_HEADER")]
     pub description_table_header: Option<String>,
+
+    /// Require log statements to have preceding comments
+    #[arg(long)]
+    pub require_comment: bool,
 }
 
 #[derive(Debug, Parser, clap::ValueEnum, Default, Clone, PartialEq, Eq)]

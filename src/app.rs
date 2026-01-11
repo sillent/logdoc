@@ -34,7 +34,7 @@ impl Application {
 
         for file in files {
             log::debug!("processing {file:?}");
-            let file_bytes = std::fs::read_to_string(file)?;
+            let file_bytes = std::fs::read_to_string(file.clone())?;
             let tree = parse
                 .parse(&file_bytes.as_bytes(), None)
                 .ok_or("Failed to parse data")?;
@@ -63,6 +63,14 @@ impl Application {
                     if position.typo == Typo::Content {
                         m.message = Message::from(&data);
                     }
+                }
+                if arg.require_comment && m.comments.is_empty() {
+                    println!("here");
+                    return Err(format!(
+                        "Log statement without comment found: level={:?}, message={:?}, file={}",
+                        m.level, m.message, file,
+                    )
+                    .into());
                 }
                 let tmeta = crate::template::TemplateMeta::from(&m);
 

@@ -1,6 +1,6 @@
 use env_logger;
 use log;
-use log::{debug, info};
+use log::{debug, info, trace};
 /* fus
 */
 fn main() {
@@ -16,4 +16,5 @@ fn main() {
     // use scope identifier
     // description
     log::warn!("this is scoped identifier message");
+    debug!("hello trace");
 }

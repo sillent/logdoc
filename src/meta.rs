@@ -106,6 +106,9 @@ impl Comments {
     pub fn format_description(&self) -> Vec<String> {
         self.description.clone()
     }
+    pub fn is_empty(&self) -> bool {
+        self.subject.is_empty() && self.description.is_empty()
+    }
 }
 
 fn delete_spaces(line: &mut String) {
