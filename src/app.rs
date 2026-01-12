@@ -32,6 +32,7 @@ impl Application {
             .map(|&lvl| (lvl, TemplateData::new(&arg, lvl)))
             .collect();
 
+        let mut violations: Vec<MissingCommentViolation> = Vec::new();
         for file in files {
             log::debug!("processing {file:?}");
             let file_bytes = std::fs::read_to_string(file.clone())?;
@@ -45,7 +46,10 @@ impl Application {
             for query_match in query_matches {
                 log::debug!("processing query match := {:?}", query_match);
                 let mut m = Meta::default();
+                let mut line = 0;
                 for query_capture in query_match.captures {
+                    let node = query_capture.node;
+                    line = node.start_position().row + 1;
                     let position = Pos::from(query_capture);
                     let query_bytes = files::search_in_file_dyn(&file_bytes.as_bytes(), &position);
                     let data = String::from_utf8_lossy(&query_bytes).to_string();
@@ -65,11 +69,13 @@ impl Application {
                     }
                 }
                 if arg.require_comment && m.comments.is_empty() {
-                    return Err(format!(
-                        "Log statement without comment found: level={:?}, message={}, file={}",
-                        m.level, m.message.0, file,
-                    )
-                    .into());
+                    violations.push(MissingCommentViolation {
+                        level: m.level,
+                        message: m.message.clone(),
+                        file: file.clone(),
+                        line: line,
+                    });
+                    continue;
                 }
                 let tmeta = crate::template::TemplateMeta::from(&m);
 
@@ -86,7 +92,21 @@ impl Application {
             let rendered = render(data, &arg.save_type)?;
             files::save_string_to_file(rendered, &level, &arg)?;
         }
-
+        if !violations.is_empty() {
+            eprintln!("Found {} log(s) without comments:", violations.len());
+            for v in &violations {
+                eprintln!("{}:{} {:?}: {}", v.file, v.line, v.level, v.message.0);
+            }
+            return Err("log comments required".into());
+        }
         Ok(())
     }
+}
+
+#[derive(Debug)]
+pub struct MissingCommentViolation {
+    pub level: Level,
+    pub message: Message,
+    pub file: String,
+    pub line: usize,
 }

@@ -9,6 +9,7 @@ fn main() {
     // test description1
     // test description2
     info!("hello");
+    info!("hello info");
     // asdf
     info!("bye");
     // test subject debug
