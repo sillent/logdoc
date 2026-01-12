@@ -65,10 +65,9 @@ impl Application {
                     }
                 }
                 if arg.require_comment && m.comments.is_empty() {
-                    println!("here");
                     return Err(format!(
-                        "Log statement without comment found: level={:?}, message={:?}, file={}",
-                        m.level, m.message, file,
+                        "Log statement without comment found: level={:?}, message={}, file={}",
+                        m.level, m.message.0, file,
                     )
                     .into());
                 }
