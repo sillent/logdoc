@@ -27,7 +27,7 @@ pub struct TemplateData {
 
 impl TemplateData {
     pub fn new(arg: &Arg, meta_level: Level) -> TemplateData {
-        let level = format!("{}", meta_level.as_ref());
+        let level: String = meta_level.to_string();
         let project = arg.project_name.clone();
         let description = match meta_level {
             Level::Trace => arg.trace_desc.clone(),
