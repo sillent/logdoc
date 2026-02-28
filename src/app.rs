@@ -37,7 +37,7 @@ impl Application {
             log::debug!("processing {file:?}");
             let file_bytes = std::fs::read_to_string(file.clone())?;
             let tree = parse
-                .parse(&file_bytes.as_bytes(), None)
+                .parse(file_bytes.as_bytes(), None)
                 .ok_or("Failed to parse data")?;
             let mut query_cursor = tree_sitter::QueryCursor::new();
             let query_matches =
@@ -51,7 +51,7 @@ impl Application {
                     let node = query_capture.node;
                     line = node.start_position().row + 1;
                     let position = Pos::from(query_capture);
-                    let query_bytes = files::search_in_file_dyn(&file_bytes.as_bytes(), &position);
+                    let query_bytes = files::search_in_file_dyn(file_bytes.as_bytes(), &position);
                     let data = String::from_utf8_lossy(&query_bytes).to_string();
                     if position.typo == Typo::Level {
                         let level = Level::from(&data);
@@ -69,11 +69,14 @@ impl Application {
                     }
                 }
                 if arg.require_comment && m.comments.is_empty() {
+                    let level = m.level;
+                    let message = m.message.clone();
+                    let file = file.clone();
                     violations.push(MissingCommentViolation {
-                        level: m.level,
-                        message: m.message.clone(),
-                        file: file.clone(),
-                        line: line,
+                        level,
+                        message,
+                        file,
+                        line,
                     });
                     continue;
                 }
