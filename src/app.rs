@@ -24,7 +24,7 @@ impl Application {
         )))?;
         let files = files::form_list_files(&arg)?;
 
-        let query = tree_sitter::Query::new(&lang.sitter_language(), &lang.query())?;
+        let query = tree_sitter::Query::new(&lang.sitter_language(), lang.query())?;
         let language_comment = lang.comment();
 
         let mut templates: HashMap<Level, TemplateData> = Level::ALL
@@ -37,7 +37,7 @@ impl Application {
             log::debug!("processing {file:?}");
             let file_bytes = std::fs::read_to_string(file.clone())?;
             let tree = parse
-                .parse(&file_bytes.as_bytes(), None)
+                .parse(file_bytes.as_bytes(), None)
                 .ok_or("Failed to parse data")?;
             let mut query_cursor = tree_sitter::QueryCursor::new();
             let query_matches =
@@ -51,7 +51,7 @@ impl Application {
                     let node = query_capture.node;
                     line = node.start_position().row + 1;
                     let position = Pos::from(query_capture);
-                    let query_bytes = files::search_in_file_dyn(&file_bytes.as_bytes(), &position);
+                    let query_bytes = files::search_in_file_dyn(file_bytes.as_bytes(), &position);
                     let data = String::from_utf8_lossy(&query_bytes).to_string();
                     if position.typo == Typo::Level {
                         let level = Level::from(&data);
@@ -68,13 +68,18 @@ impl Application {
                         m.message = Message::from(&data);
                     }
                 }
-                if arg.require_comment && m.comments.is_empty() {
-                    violations.push(MissingCommentViolation {
-                        level: m.level,
-                        message: m.message.clone(),
-                        file: file.clone(),
-                        line: line,
-                    });
+                if m.comments.is_empty() {
+                    if arg.require_comment {
+                        let level = m.level;
+                        let message = m.message.clone();
+                        let file = file.clone();
+                        violations.push(MissingCommentViolation {
+                            level,
+                            message,
+                            file,
+                            line,
+                        });
+                    }
                     continue;
                 }
                 let tmeta = crate::template::TemplateMeta::from(&m);
@@ -84,20 +89,20 @@ impl Application {
                 }
             }
         }
-        for (level, data) in templates {
-            if data.is_empty() {
-                log::info!("skippking {:?}, no metadata found", level);
-                continue;
-            }
-            let rendered = render(data, &arg.save_type)?;
-            files::save_string_to_file(rendered, &level, &arg)?;
-        }
         if !violations.is_empty() {
             eprintln!("Found {} log(s) without comments:", violations.len());
             for v in &violations {
                 eprintln!("{}:{} {:?}: {}", v.file, v.line, v.level, v.message.0);
             }
             return Err("log comments required".into());
+        }
+        for (level, data) in templates {
+            if data.is_empty() {
+                log::info!("skipping data '{data:?}' with level '{level:?}, no metadata found",);
+                continue;
+            }
+            let rendered = render(data, &arg.save_type)?;
+            files::save_string_to_file(rendered, &level, &arg)?;
         }
         Ok(())
     }

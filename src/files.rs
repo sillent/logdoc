@@ -28,13 +28,13 @@ pub fn form_list_files(arg: &args::Arg) -> Result<Vec<String>, Box<dyn std::erro
         );
     }
     let recurse = arg.recurse;
-    let mut files = list_files_in_dir(&arg.directories(), recurse, &lang)?;
+    let mut files = list_files_in_dir(arg.directories(), recurse, lang)?;
     total.append(&mut files);
 
     Ok(total)
 }
 fn list_files_in_dir<T>(
-    dirs: &Vec<T>,
+    dirs: &[T],
     recurse: bool,
     language: &Language,
 ) -> Result<Vec<String>, Box<dyn std::error::Error>>
@@ -155,7 +155,7 @@ where
         .truncate(true)
         .append(false)
         .open(&save_path)?;
-    file.write(data.as_ref())?;
+    file.write_all(data.as_ref())?;
     Ok(())
 }
 

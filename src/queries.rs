@@ -1,4 +1,4 @@
-pub const QUERY_GOLANG: &'static str = r#"
+pub const QUERY_GOLANG: &str = r#"
 (
   [
     (
@@ -45,7 +45,7 @@ pub const QUERY_GOLANG: &'static str = r#"
 )
 
 "#;
-pub const QUERY_RUST: &'static str = r#"
+pub const QUERY_RUST: &str = r#"
 (
   [
     (
@@ -86,7 +86,7 @@ pub const QUERY_RUST: &'static str = r#"
   ]
 )
 "#;
-pub const QUERY: &'static str = r#"(
+pub const QUERY: &str = r#"(
     (comment) @comment1
     (comment) @comment2
 	(expression_statement
@@ -102,7 +102,7 @@ pub const QUERY: &'static str = r#"(
     ) 
 )"#;
 
-pub const QUERY2: &'static str = r#"(
+pub const QUERY2: &str = r#"(
     (comment) @comment1 
     (comment)* @comment2
 	(expression_statement
@@ -116,7 +116,7 @@ pub const QUERY2: &'static str = r#"(
          )
     )*
 )"#;
-pub const QUERY3: &'static str = r#"(
+pub const QUERY3: &str = r#"(
     ((comment) @desc
     .
     (comment)? @action)
@@ -133,7 +133,7 @@ pub const QUERY3: &'static str = r#"(
     )
 )"#;
 
-pub const QUERY4: &'static str = r#"
+pub const QUERY4: &str = r#"
 (source_file (package_clause (package_identifier) @package))
 (
     ((comment) @comment1  
@@ -157,7 +157,7 @@ pub const QUERY4: &'static str = r#"
 )
 "#;
 
-pub const QUERY5: &'static str = r#"
+pub const QUERY5: &str = r#"
 (source_file (package_clause (package_identifier) @package))
 (
     ([((comment) @comment1  
@@ -184,7 +184,7 @@ pub const QUERY5: &'static str = r#"
 )
 "#;
 
-pub const QUERY_LOG1: &'static str = r#"
+pub const QUERY_LOG1: &str = r#"
 (
 	(
     	(
@@ -198,7 +198,7 @@ pub const QUERY_LOG1: &'static str = r#"
 )
 "#;
 
-pub const QUERY_LOG2: &'static str = r#"
+pub const QUERY_LOG2: &str = r#"
 (
 	(
     	(
