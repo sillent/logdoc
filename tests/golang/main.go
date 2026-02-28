@@ -15,6 +15,7 @@ func main() {
 	// description 1
 	log.WithField("test", "test").
 		Info("test info log 2")
+	log.WithField("field", "message").Info("invalid error")
 	// just debug subject
 	// description 1
 	// description 2

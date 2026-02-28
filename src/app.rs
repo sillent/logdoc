@@ -68,16 +68,18 @@ impl Application {
                         m.message = Message::from(&data);
                     }
                 }
-                if arg.require_comment && m.comments.is_empty() {
-                    let level = m.level;
-                    let message = m.message.clone();
-                    let file = file.clone();
-                    violations.push(MissingCommentViolation {
-                        level,
-                        message,
-                        file,
-                        line,
-                    });
+                if m.comments.is_empty() {
+                    if arg.require_comment {
+                        let level = m.level;
+                        let message = m.message.clone();
+                        let file = file.clone();
+                        violations.push(MissingCommentViolation {
+                            level,
+                            message,
+                            file,
+                            line,
+                        });
+                    }
                     continue;
                 }
                 let tmeta = crate::template::TemplateMeta::from(&m);
@@ -95,12 +97,9 @@ impl Application {
             return Err("log comments required".into());
         }
         for (level, data) in templates {
-            dbg!(&data);
             if data.is_empty() {
                 log::info!("skipping data '{data:?}' with level '{level:?}, no metadata found",);
                 continue;
-            } else {
-                log::debug!("data '{data:?}', not empty");
             }
             let rendered = render(data, &arg.save_type)?;
             files::save_string_to_file(rendered, &level, &arg)?;
