@@ -22,7 +22,7 @@ pub fn form_list_files(arg: &args::Arg) -> Result<Vec<String>, Box<dyn std::erro
                 .iter()
                 .filter(|file| {
                     file.ends_with(lang.file_ending())
-                        && std::fs::metadata(file).map_or(false, |m| m.is_file())
+                        && std::fs::metadata(file).is_ok_and(|x| x.is_file())
                 })
                 .cloned(),
         );
@@ -138,19 +138,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{args, files::search_in_file_dyn, meta::Pos};
+    use crate::{files::search_in_file_dyn, meta::Pos};
 
-    #[test]
-    fn test_form_list_files() {
-        let arg = args::Arg {
-            project_name: "test".to_owned(),
-            directories: Some(vec!["".to_owned()]),
-            ..Default::default()
-        };
-        // let mut arg: args::Arg = Default::default();
-        // arg.project_name = String::from("test");
-        // arg.directories = Some(vec!["".to_owned()]);
-    }
     #[test]
     fn test_walk_file_dyn() {
         let data = r#"Hello,
