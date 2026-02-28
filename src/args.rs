@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::Parser;
 
 use crate::language;
@@ -110,13 +112,12 @@ impl ToString for SaveType {
 }
 
 impl Arg {
-    pub fn directories(&self) -> Vec<String> {
-        let dirs = if let Some(dirs) = self.directories.clone() {
-            dirs
+    pub fn directories(&self) -> &[String] {
+        if let Some(dirs) = self.directories.as_ref() {
+            dirs.as_slice()
         } else {
-            vec![]
-        };
-        dirs
+            &[]
+        }
     }
     pub fn directories_ref(&self) -> Vec<&String> {
         if let Some(dirs) = &self.directories {
