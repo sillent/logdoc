@@ -27,7 +27,7 @@ impl Comment {
         vec![Self::Dash, Self::Slash]
     }
 
-    pub fn remove(&self, text: &String) -> String {
+    pub fn remove(&self, text: &str) -> String {
         match self {
             Self::Dash => text.trim_start_matches('#').trim().to_string(),
             Self::Slash => text.trim_start_matches('/').trim().to_string(),

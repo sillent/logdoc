@@ -24,7 +24,7 @@ impl Application {
         )))?;
         let files = files::form_list_files(&arg)?;
 
-        let query = tree_sitter::Query::new(&lang.sitter_language(), &lang.query())?;
+        let query = tree_sitter::Query::new(&lang.sitter_language(), lang.query())?;
         let language_comment = lang.comment();
 
         let mut templates: HashMap<Level, TemplateData> = Level::ALL
@@ -87,20 +87,23 @@ impl Application {
                 }
             }
         }
-        for (level, data) in templates {
-            if data.is_empty() {
-                log::info!("skippking {:?}, no metadata found", level);
-                continue;
-            }
-            let rendered = render(data, &arg.save_type)?;
-            files::save_string_to_file(rendered, &level, &arg)?;
-        }
         if !violations.is_empty() {
             eprintln!("Found {} log(s) without comments:", violations.len());
             for v in &violations {
                 eprintln!("{}:{} {:?}: {}", v.file, v.line, v.level, v.message.0);
             }
             return Err("log comments required".into());
+        }
+        for (level, data) in templates {
+            dbg!(&data);
+            if data.is_empty() {
+                log::info!("skipping data '{data:?}' with level '{level:?}, no metadata found",);
+                continue;
+            } else {
+                log::debug!("data '{data:?}', not empty");
+            }
+            let rendered = render(data, &arg.save_type)?;
+            files::save_string_to_file(rendered, &level, &arg)?;
         }
         Ok(())
     }
