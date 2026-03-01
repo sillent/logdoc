@@ -1,4 +1,4 @@
-use std::{error::Error, io::Write, path::Path};
+use std::{collections::HashMap, error::Error, io::Write, os::unix::fs::MetadataExt, path::Path};
 
 use crate::{
     args::{self},
@@ -14,24 +14,22 @@ pub trait WalkInPosition {
 }
 
 pub fn form_list_files(arg: &args::Arg) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    let mut total = vec![];
     let lang = &arg.language;
+    let mut total = HashMap::new();
     if let Some(files) = &arg.files {
-        total.extend(
-            files
-                .iter()
-                .filter(|file| {
-                    file.ends_with(lang.file_ending())
-                        && std::fs::metadata(file).is_ok_and(|x| x.is_file())
-                })
-                .cloned(),
-        );
+        total.extend(files.iter().filter_map(|file| {
+            std::fs::metadata(file)
+                .ok()
+                .map(|metadata| (metadata.ino(), file))
+        }));
     }
-    let recurse = arg.recurse;
-    let mut files = list_files_in_dir(arg.directories(), recurse, lang)?;
-    total.append(&mut files);
-
-    Ok(total)
+    let files = list_files_in_dir(arg.directories(), arg.recurse, lang)?;
+    total.extend(files.iter().filter_map(|file| {
+        std::fs::metadata(file)
+            .ok()
+            .map(|metadata| (metadata.ino(), file))
+    }));
+    Ok(total.into_values().cloned().collect())
 }
 fn list_files_in_dir<T>(
     dirs: &[T],
