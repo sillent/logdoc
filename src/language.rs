@@ -67,27 +67,14 @@ impl Language {
         match self {
             Golang => queries::QUERY_GOLANG,
             Rust => queries::QUERY_RUST,
-            C => query_c(),
-            Cpp => query_cpp(),
-            Ruby => query_ruby(),
-            Python => query_python(),
-            Java => query_java(),
-            JavaScript => query_javascript(),
+            C => unimplemented!(),
+            Cpp => unimplemented!(),
+            Ruby => unimplemented!(),
+            Python => unimplemented!(),
+            Java => unimplemented!(),
+            JavaScript => unimplemented!(),
         }
     }
-    // pub fn negated_quer(&self) -> &str {
-    //     use Language::*;
-    //     match self {
-    //         Golang => negated_query_go(),
-    //         Rust => negated_query_rust(),
-    //         C => negated_query_c(),
-    //         Cpp => negated_query_cpp(),
-    //         Ruby => negated_query_ruby(),
-    //         Python => negated_query_python(),
-    //         Java => negated_query_java(),
-    //         JavaScript => negated_query_javascript(),
-    //     }
-    // }
     pub fn sitter_language(&self) -> tree_sitter::Language {
         use Language::*;
         match self {
@@ -121,148 +108,4 @@ impl Language {
             Ruby => ".rb",
         }
     }
-}
-
-fn query_go() -> &'static str {
-    r#"
-(
- (comment)+ @comment
- .
- (expression_statement
-  (call_expression
-   (selector_expression
-    (field_identifier) @level
-    (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Ff][Aa][Tt][Aa][Ll]*|[Ee][Rr][Rr][Oo][Rr]*|[Tt][Rr][Aa][Cc][Ee]*)")
-   )
-   (argument_list
-    (
-     (interpreted_string_literal)*
-     .
-     (raw_string_literal)*
-     ) @content
-    )
-   )
-  )
-)
-    "#
-}
-
-fn query_rust() -> &'static str {
-    r#"
-(
- (line_comment)+ @comment
- .
- (expression_statement
-  (macro_invocation
-   (identifier) @level
-   (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Ff][Aa][Tt][Aa][Ll]*|[Ee][Rr][Rr][Oo][Rr]*|[Tt][Rr][Aa][Cc][Ee]*)")
-   (token_tree
-     (string_literal) @content)
-  )
- )
-)
-    "#
-}
-
-fn query_c() -> &'static str {
-    r#"
-(
-  (comment)+ @comment
-  .
-  (expression_statement
-    (call_expression
-        (identifier) @level
-        (#match? @level "^(.*[Ii][Nn][Ff][Oo]*|.*[Dd][Ee][Bb][Uu][Gg]|.*[Ww][Aa][Rr][Nn]*|.*[Ff][Aa][Tt][Aa][Ll]*|.*[Ee][Rr][Rr][Oo][Rr]*|.*[Tt][Rr][Aa][Cc][Ee]*)")
-     (argument_list
-       (string_literal) @content
-     )
-    )
-  )
-)
-    "#
-}
-
-fn query_cpp() -> &'static str {
-    r#"
-(
-  (comment)+ @comment
-  .
-  (expression_statement
-    (call_expression
-        (identifier) @level
-        (#match? @level "^(.*[Ii][Nn][Ff][Oo]*|.*[Dd][Ee][Bb][Uu][Gg]|.*[Ww][Aa][Rr][Nn]*|.*[Ff][Aa][Tt][Aa][Ll]*|.*[Ee][Rr][Rr][Oo][Rr]*|.*[Tt][Rr][Aa][Cc][Ee]*)")
-     (argument_list
-       (string_literal) @content
-     )
-    )
-  )
-)
-    "#
-}
-
-fn query_ruby() -> &'static str {
-    r#"
-(
-  (comment)+ @comment
-  .
-  (call
-    receiver: (identifier)
-    method: (identifier) @level
-    (#match? @level "^(.*[Ii][Nn][Ff][Oo]*|.*[Dd][Ee][Bb][Uu][Gg]|.*[Ww][Aa][Rr][Nn]*|.*[Ee][Rr][Rr][Oo][Rr]*|.*[Ff][Aa][Tt][Aa][Ll]*|.*[Tt][Rr][Aa][Cc][Ee]*)")
-    (argument_list
-       (string) @content
-     )
-  )
-)
-    "#
-}
-
-fn query_python() -> &'static str {
-    r#"
-(
- (comment)+ @comment
- .
- (expression_statement
-  (call
-   (_
-     attribute: (identifier) @level
-    (#match? @level "^(.*[Ii][Nn][Ff][Oo]*|.*[Dd][Ee][Bb][Uu][Gg]|.*[Ww][Aa][Rr][Nn]*|.*[Ee][Rr][Rr][Oo][Rr]*|.*[Ff][Aa][Tt][Aa][Ll]*|.*[Tt][Rr][Aa][Cc][Ee]*)")
-   )
-   (argument_list
-    (string) @content
-   )
-  )
- )
-)
-    "#
-}
-fn query_java() -> &'static str {
-    r#"(
-	(
-    	(
-    		(line_comment) @level
-    	)
-        (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll]):")
-    )
-   	.
-    (line_comment) @subject
-    .
-    (line_comment)*? @description
-    )
-    "#
-}
-
-fn query_javascript() -> &'static str {
-    r#"(
-	(
-    	(
-    		(comment) @level
-    	)
-        (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll]):")
-    )
-   	.
-    (comment) @subject
-    .
-    (comment)*? @description
-    )"#
 }

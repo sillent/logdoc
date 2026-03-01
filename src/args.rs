@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::fmt::Display;
 
 use clap::Parser;
 
@@ -101,12 +101,11 @@ pub enum SaveType {
     CSV,
 }
 
-impl ToString for SaveType {
-    fn to_string(&self) -> String {
-        use SaveType::*;
+impl Display for SaveType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            MD => "markdown".to_owned(),
-            CSV => "csv".to_owned(),
+            Self::MD => write!(f, "markdown"),
+            Self::CSV => write!(f, "csv"),
         }
     }
 }
@@ -118,13 +117,6 @@ impl Arg {
         } else {
             &[]
         }
-    }
-    pub fn directories_ref(&self) -> Vec<&String> {
-        if let Some(dirs) = &self.directories {
-            let v = dirs.iter().map(|x| x).collect();
-            return v;
-        }
-        return vec![];
     }
     pub fn file_suffix(&self) -> &'static str {
         match self.save_type {

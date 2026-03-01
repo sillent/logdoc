@@ -1,0 +1,270 @@
+pub const QUERY: &str = r#"(
+    (comment) @comment1
+    (comment) @comment2
+	(expression_statement
+    	(call_expression
+        	function:
+            	((selector_expression
+                  (_)
+                  (field_identifier) @module
+                )(#match? @module "^(Info|Infof|Print|Printf|Debug|Debugf|Error|Errorf|Trace|Tracef)"))
+            (argument_list (interpreted_string_literal) @strliteral
+            )
+         )
+    ) 
+)"#;
+
+pub const QUERY2: &str = r#"(
+    (comment) @comment1 
+    (comment)* @comment2
+	(expression_statement
+    	(call_expression
+        	function:
+            	((selector_expression
+                  (field_identifier) @module
+                )(#match? @module "^(Info|Infof|Print|Printf|Debug|Debugf|Error|Errorf|Trace|Tracef)"))
+            (argument_list (interpreted_string_literal) @strliteral
+            )
+         )
+    )*
+)"#;
+pub const QUERY3: &str = r#"(
+    ((comment) @desc
+    .
+    (comment)? @action)
+    .
+	(expression_statement
+    	(call_expression
+        	function:
+            	((selector_expression
+                  (field_identifier) @module
+                )(#match? @module "^(Info|Infof|Print|Printf|Debug|Debugf|Error|Errorf|Trace|Tracef)"))
+            (argument_list (interpreted_string_literal) @strliteral
+            )
+         )
+    )
+)"#;
+
+pub const QUERY4: &str = r#"
+(source_file (package_clause (package_identifier) @package))
+(
+    ((comment) @comment1  
+    .
+    (comment)? @comment2)
+    .
+	(expression_statement
+    	(call_expression
+        	function:
+            	((selector_expression
+                  (field_identifier) @module
+                )(#match? @module "^(Info|Print|Debug|Error|Trace)"))
+            (argument_list 
+            	[
+                	(interpreted_string_literal) @strliteral
+                    (identifier) @strvar
+                ]
+            )
+         )
+    )
+)
+"#;
+
+pub const QUERY5: &str = r#"
+(source_file (package_clause (package_identifier) @package))
+(
+    ([((comment) @comment1  
+    .
+    (comment) @comment2) @two_comments
+    (
+     (comment) @comment1
+    ) @one_comment
+    ])
+	(expression_statement
+    	(call_expression
+        	function:
+            	((selector_expression
+                  (field_identifier) @module
+                ) . (#match? @module "^(Info|Info|Print|Print|Debug|Debug|Error|Error|Trace|Trace)"))
+            (argument_list 
+            	[
+                	(interpreted_string_literal) @strliteral
+                    (identifier) @strvar
+                ]
+            )
+         )
+    )
+)
+"#;
+
+pub const QUERY_LOG1: &str = r#"
+(
+	(
+    	(
+    		(comment) @comment1
+    	)
+        (#match? @comment1 "^// (Info|Debug|Critical|Trace|Fatal):")
+    )
+    .
+    (comment)*? @coment2
+
+)
+"#;
+
+pub const QUERY_LOG2: &str = r#"
+(
+	(
+    	(
+    		(comment) @severity
+    	)
+        (#match? @severity "^// (Info|Debug|Critical|Trace|Fatal):")
+    )
+   	.
+    (comment) @subject
+    .
+    (comment)*? @description
+
+)
+"#;
+fn query_go() -> &'static str {
+    r#"
+(
+ (comment)+ @comment
+ .
+ (expression_statement
+  (call_expression
+   (selector_expression
+    (field_identifier) @level
+    (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Ff][Aa][Tt][Aa][Ll]*|[Ee][Rr][Rr][Oo][Rr]*|[Tt][Rr][Aa][Cc][Ee]*)")
+   )
+   (argument_list
+    (
+     (interpreted_string_literal)*
+     .
+     (raw_string_literal)*
+     ) @content
+    )
+   )
+  )
+)
+    "#
+}
+
+fn query_rust() -> &'static str {
+    r#"
+(
+ (line_comment)+ @comment
+ .
+ (expression_statement
+  (macro_invocation
+   (identifier) @level
+   (#match? @level "^([Ii][Nn][Ff][Oo]*|[Dd][Ee][Bb][Uu][Gg]*|[Ww][Aa][Rr][Nn]*|[Ff][Aa][Tt][Aa][Ll]*|[Ee][Rr][Rr][Oo][Rr]*|[Tt][Rr][Aa][Cc][Ee]*)")
+   (token_tree
+     (string_literal) @content)
+  )
+ )
+)
+    "#
+}
+
+fn query_c() -> &'static str {
+    r#"
+(
+  (comment)+ @comment
+  .
+  (expression_statement
+    (call_expression
+        (identifier) @level
+        (#match? @level "^(.*[Ii][Nn][Ff][Oo]*|.*[Dd][Ee][Bb][Uu][Gg]|.*[Ww][Aa][Rr][Nn]*|.*[Ff][Aa][Tt][Aa][Ll]*|.*[Ee][Rr][Rr][Oo][Rr]*|.*[Tt][Rr][Aa][Cc][Ee]*)")
+     (argument_list
+       (string_literal) @content
+     )
+    )
+  )
+)
+    "#
+}
+
+fn query_cpp() -> &'static str {
+    r#"
+(
+  (comment)+ @comment
+  .
+  (expression_statement
+    (call_expression
+        (identifier) @level
+        (#match? @level "^(.*[Ii][Nn][Ff][Oo]*|.*[Dd][Ee][Bb][Uu][Gg]|.*[Ww][Aa][Rr][Nn]*|.*[Ff][Aa][Tt][Aa][Ll]*|.*[Ee][Rr][Rr][Oo][Rr]*|.*[Tt][Rr][Aa][Cc][Ee]*)")
+     (argument_list
+       (string_literal) @content
+     )
+    )
+  )
+)
+    "#
+}
+
+fn query_ruby() -> &'static str {
+    r#"
+(
+  (comment)+ @comment
+  .
+  (call
+    receiver: (identifier)
+    method: (identifier) @level
+    (#match? @level "^(.*[Ii][Nn][Ff][Oo]*|.*[Dd][Ee][Bb][Uu][Gg]|.*[Ww][Aa][Rr][Nn]*|.*[Ee][Rr][Rr][Oo][Rr]*|.*[Ff][Aa][Tt][Aa][Ll]*|.*[Tt][Rr][Aa][Cc][Ee]*)")
+    (argument_list
+       (string) @content
+     )
+  )
+)
+    "#
+}
+
+fn query_python() -> &'static str {
+    r#"
+(
+ (comment)+ @comment
+ .
+ (expression_statement
+  (call
+   (_
+     attribute: (identifier) @level
+    (#match? @level "^(.*[Ii][Nn][Ff][Oo]*|.*[Dd][Ee][Bb][Uu][Gg]|.*[Ww][Aa][Rr][Nn]*|.*[Ee][Rr][Rr][Oo][Rr]*|.*[Ff][Aa][Tt][Aa][Ll]*|.*[Tt][Rr][Aa][Cc][Ee]*)")
+   )
+   (argument_list
+    (string) @content
+   )
+  )
+ )
+)
+    "#
+}
+fn query_java() -> &'static str {
+    r#"(
+	(
+    	(
+    		(line_comment) @level
+    	)
+        (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll]):")
+    )
+   	.
+    (line_comment) @subject
+    .
+    (line_comment)*? @description
+    )
+    "#
+}
+
+fn query_javascript() -> &'static str {
+    r#"(
+	(
+    	(
+    		(comment) @level
+    	)
+        (#match? @level "^//(\\s)*([Ii][Nn][Ff][Oo]|[Dd][Ee][Bb][Uu][Gg]|[Ww][Aa][Rr][Nn]|[Tt][Rr][Aa][Cc][Ee]|[Ff][Aa][Tt][Aa][Ll]):")
+    )
+   	.
+    (comment) @subject
+    .
+    (comment)*? @description
+    )"#
+}

@@ -111,27 +111,6 @@ impl Comments {
     }
 }
 
-fn delete_spaces(line: &mut String) {
-    loop {
-        if line.starts_with(" ") {
-            crop_letters(line, 1);
-        } else {
-            break;
-        }
-    }
-}
-
-fn crop_letters(s: &mut String, pos: usize) {
-    match s.char_indices().nth(pos) {
-        Some((pos, _)) => {
-            s.drain(..pos);
-        }
-        None => {
-            s.clear();
-        }
-    }
-}
-
 impl From<&String> for Level {
     fn from(value: &String) -> Self {
         let line = value.to_lowercase().trim().to_owned();
